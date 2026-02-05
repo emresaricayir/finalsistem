@@ -1,0 +1,624 @@
+@extends('admin.layouts.app')
+
+@section('content')
+<!-- TinyMCE CDN - Self-hosted version -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.7.2/tinymce.min.js"></script>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                <i class="fas fa-plus mr-2 text-green-500"></i>
+                Yeni Sayfa Oluştur
+            </h1>
+            <p class="mt-2 text-gray-600">Yeni bir sayfa oluşturun ve içeriğini düzenleyin.</p>
+        </div>
+        <a href="{{ route('admin.pages.index') }}"
+           class="btn-secondary px-6 py-3 rounded-xl font-medium">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Geri Dön
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <form action="{{ route('admin.pages.store') }}" method="POST" class="space-y-8">
+            @csrf
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Form Fields -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Page Title - Türkçe ve Almanca -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Türkçe Başlık -->
+                        <div>
+                            <label for="title_tr" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-heading mr-2 text-blue-500"></i>
+                                Türkçe Başlık <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title_tr"
+                                   id="title_tr"
+                                   required
+                                   value="{{ old('title_tr') }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('title_tr') border-red-500 @enderror"
+                                   placeholder="Türkçe sayfa başlığını giriniz">
+                            @error('title_tr')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Almanca Başlık -->
+                        <div>
+                            <label for="title_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-heading mr-2 text-green-500"></i>
+                                Almanca Başlık
+                            </label>
+                            <input type="text"
+                                   name="title_de"
+                                   id="title_de"
+                                   value="{{ old('title_de') }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent @error('title_de') border-red-500 @enderror"
+                                   placeholder="Almanca sayfa başlığını giriniz">
+                            @error('title_de')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- URL Slug -->
+                    <div>
+                        <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-link mr-2 text-purple-500"></i>
+                            URL Slug
+                        </label>
+                        <input type="text"
+                               name="slug"
+                               id="slug"
+                               value="{{ old('slug') }}"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('slug') border-red-500 @enderror"
+                               placeholder="sayfa-adi">
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Boş bırakılırsa sayfa başlığından otomatik oluşturulur.
+                        </p>
+                        @error('slug')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Sidebar Fields -->
+                <div class="space-y-6">
+                    <!-- Sort Order -->
+                    <div>
+                        <label for="sort_order" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-sort-numeric-up mr-2 text-indigo-500"></i>
+                            Sıralama
+                        </label>
+                        <input type="number"
+                               name="sort_order"
+                               id="sort_order"
+                               value="{{ old('sort_order', 0) }}"
+                               min="0"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('sort_order') border-red-500 @enderror">
+                        @error('sort_order')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Active Status -->
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox"
+                                   name="is_active"
+                                   value="1"
+                                   {{ old('is_active', true) ? 'checked' : '' }}
+                                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <span class="ml-2 text-sm font-medium text-gray-700">
+                                <i class="fas fa-check-circle mr-1 text-green-500"></i>
+                                Sayfa aktif olsun
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Editor - Türkçe ve Almanca -->
+            <div class="space-y-6">
+                <!-- Türkçe İçerik -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-edit mr-2 text-blue-500"></i>
+                        Türkçe İçerik
+                    </label>
+                    <div class="border border-gray-300 rounded-xl overflow-hidden">
+                        <textarea name="content_tr" id="content_tr">{{ old('content_tr') }}</textarea>
+                    </div>
+                    @error('content_tr')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Almanca İçerik -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-edit mr-2 text-green-500"></i>
+                        Almanca İçerik
+                    </label>
+                    <div class="border border-gray-300 rounded-xl overflow-hidden">
+                        <textarea name="content_de" id="content_de">{{ old('content_de') }}</textarea>
+                    </div>
+                    @error('content_de')
+                        <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- SEO Fields - Türkçe ve Almanca -->
+            <div class="space-y-6">
+                <!-- Türkçe SEO -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-search mr-2 text-blue-500"></i>
+                        Türkçe SEO Ayarları
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Meta Description TR -->
+                        <div>
+                            <label for="meta_description_tr" class="block text-sm font-medium text-gray-700 mb-2">
+                                Meta Açıklama (TR)
+                            </label>
+                            <textarea name="meta_description_tr"
+                                      id="meta_description_tr"
+                                      rows="4"
+                                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('meta_description_tr') border-red-500 @enderror"
+                                      placeholder="Arama motorları için sayfa açıklaması">{{ old('meta_description_tr') }}</textarea>
+                            @error('meta_description_tr')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Meta Keywords TR -->
+                        <div>
+                            <label for="meta_keywords_tr" class="block text-sm font-medium text-gray-700 mb-2">
+                                Meta Anahtar Kelimeler (TR)
+                            </label>
+                            <input type="text"
+                                   name="meta_keywords_tr"
+                                   id="meta_keywords_tr"
+                                   value="{{ old('meta_keywords_tr') }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('meta_keywords_tr') border-red-500 @enderror"
+                                   placeholder="anahtar kelime 1, anahtar kelime 2">
+                            @error('meta_keywords_tr')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Almanca SEO -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-search mr-2 text-green-500"></i>
+                        Almanca SEO Ayarları
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Meta Description DE -->
+                        <div>
+                            <label for="meta_description_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                Meta Açıklama (DE)
+                            </label>
+                            <textarea name="meta_description_de"
+                                      id="meta_description_de"
+                                      rows="4"
+                                      class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent @error('meta_description_de') border-red-500 @enderror"
+                                      placeholder="Seitenbeschreibung für Suchmaschinen">{{ old('meta_description_de') }}</textarea>
+                            @error('meta_description_de')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Meta Keywords DE -->
+                        <div>
+                            <label for="meta_keywords_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                Meta Anahtar Kelimeler (DE)
+                            </label>
+                            <input type="text"
+                                   name="meta_keywords_de"
+                                   id="meta_keywords_de"
+                                   value="{{ old('meta_keywords_de') }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-transparent @error('meta_keywords_de') border-red-500 @enderror"
+                                   placeholder="Schlüsselwort 1, Schlüsselwort 2">
+                            @error('meta_keywords_de')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{{ route('admin.pages.index') }}"
+                   class="btn-secondary px-6 py-3 rounded-xl font-medium">
+                    <i class="fas fa-times mr-2"></i>
+                    İptal
+                </a>
+                <button type="submit" class="btn-primary text-white px-6 py-3 rounded-xl font-medium">
+                    <i class="fas fa-save mr-2"></i>
+                    Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<!-- Quill.js CDN -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titleTrInput = document.getElementById('title_tr');
+    const slugInput = document.getElementById('slug');
+
+    // Slug oluşturma - Türkçe başlıktan
+    if (titleTrInput) {
+        titleTrInput.addEventListener('input', function() {
+            if (!slugInput.value) {
+                const slug = this.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .trim();
+                slugInput.value = slug;
+            }
+        });
+    }
+
+    // Initialize TinyMCE editor for Turkish content
+    tinymce.init({
+        selector: '#content_tr',
+        height: 500,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons',
+            'template', 'codesample', 'hr', 'pagebreak', 'nonbreaking', 'toc',
+            'textpattern', 'noneditable', 'quickbars', 'paste'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help | image media link | code | fullscreen | ' +
+            'emoticons | table | searchreplace | wordcount | preview | ' +
+            'imageeffects',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+        language: 'tr',
+        language_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.7.2/langs/tr.js',
+        branding: false,
+        promotion: false,
+        license_key: 'gpl',
+        // Image upload configuration
+        images_upload_url: '/admin/upload-image',
+        images_upload_credentials: true,
+        images_upload_handler: function (blobInfo, success, failure, progress) {
+            return new Promise(function(resolve, reject) {
+                const formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                const xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+
+                if (progress && typeof progress === 'function') {
+                    xhr.upload.onprogress = function (e) {
+                        if (e.lengthComputable) {
+                            progress(e.loaded / e.total * 100);
+                        }
+                    };
+                }
+
+                xhr.onload = function () {
+                    let json;
+
+                    try {
+                        json = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        failure('Invalid JSON response: ' + xhr.responseText);
+                        reject('Invalid JSON response');
+                        return;
+                    }
+
+                    if (xhr.status === 403) {
+                        failure('HTTP Error: ' + xhr.status + ' - ' + (json.message || 'Forbidden'), { remove: true });
+                        reject('Forbidden');
+                        return;
+                    }
+
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        failure('HTTP Error: ' + xhr.status + ' - ' + (json.message || 'Unknown error'));
+                        reject('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+
+                    if (!json || !json.success || typeof json.url !== 'string') {
+                        failure('Upload failed: ' + (json.message || 'Invalid response format'));
+                        reject('Invalid response');
+                        return;
+                    }
+
+                    success(json.url);
+                    resolve(json.url);
+                };
+
+                xhr.onerror = function () {
+                    const errorMsg = 'Image upload failed due to a network error. Code: ' + xhr.status;
+                    failure(errorMsg);
+                    reject(errorMsg);
+                };
+
+                xhr.ontimeout = function () {
+                    const errorMsg = 'Image upload timed out';
+                    failure(errorMsg);
+                    reject(errorMsg);
+                };
+
+                xhr.open('POST', '/admin/upload-image');
+                xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                xhr.timeout = 30000; // 30 second timeout
+                xhr.send(formData);
+            });
+        },
+        // Allow drag and drop of images
+        paste_data_images: true,
+        images_file_types: 'jpeg,jpg,png,gif,webp',
+        automatic_uploads: true,
+        setup: function (editor) {
+            editor.on('change', function () {
+                editor.save();
+            });
+
+            // Özel resim efekt butonları
+            editor.ui.registry.addButton('imageeffects', {
+                text: '🖼️ Efektler',
+                tooltip: 'Resim Efektleri',
+                onAction: function () {
+                    editor.windowManager.open({
+                        title: 'Resim Efektleri',
+                        body: {
+                            type: 'panel',
+                            items: [
+                                {
+                                    type: 'selectbox',
+                                    name: 'shadow',
+                                    label: 'Gölge Efekti',
+                                    items: [
+                                        { text: 'Varsayılan', value: '' },
+                                        { text: 'Yumuşak Gölge', value: 'shadow-soft' },
+                                        { text: 'Orta Gölge', value: 'shadow-medium' },
+                                        { text: 'Güçlü Gölge', value: 'shadow-strong' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'border',
+                                    label: 'Çerçeve',
+                                    items: [
+                                        { text: 'Çerçevesiz', value: '' },
+                                        { text: 'İnce Çerçeve', value: 'border-thin' },
+                                        { text: 'Orta Çerçeve', value: 'border-medium' },
+                                        { text: 'Kalın Çerçeve', value: 'border-thick' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'rounded',
+                                    label: 'Köşe Yuvarlaklığı',
+                                    items: [
+                                        { text: 'Varsayılan', value: '' },
+                                        { text: 'Köşesiz', value: 'rounded-none' },
+                                        { text: 'Küçük', value: 'rounded-small' },
+                                        { text: 'Orta', value: 'rounded-medium' },
+                                        { text: 'Büyük', value: 'rounded-large' },
+                                        { text: 'Tam Yuvarlak', value: 'rounded-full' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'size',
+                                    label: 'Boyut',
+                                    items: [
+                                        { text: 'Varsayılan', value: '' },
+                                        { text: 'Küçük (200px)', value: 'small' },
+                                        { text: 'Orta (400px)', value: 'medium' },
+                                        { text: 'Büyük (600px)', value: 'large' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'hover',
+                                    label: 'Hover Efekti',
+                                    items: [
+                                        { text: 'Varsayılan', value: '' },
+                                        { text: 'Yukarı Kaldır', value: 'hover-lift' },
+                                        { text: 'Büyüt', value: 'hover-scale' },
+                                        { text: 'Döndür', value: 'hover-rotate' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'filter',
+                                    label: 'Renk Filtresi',
+                                    items: [
+                                        { text: 'Normal', value: '' },
+                                        { text: 'Sepia', value: 'sepia' },
+                                        { text: 'Siyah-Beyaz', value: 'grayscale' },
+                                        { text: 'Yumuşak Bulanık', value: 'blur-soft' },
+                                        { text: 'Parlak', value: 'brightness' },
+                                        { text: 'Kontrastlı', value: 'contrast' }
+                                    ]
+                                },
+                                {
+                                    type: 'selectbox',
+                                    name: 'animation',
+                                    label: 'Animasyon',
+                                    items: [
+                                        { text: 'Animasyonsuz', value: '' },
+                                        { text: 'Fade In', value: 'fade-in' },
+                                        { text: 'Slide In Left', value: 'slide-in-left' },
+                                        { text: 'Slide In Right', value: 'slide-in-right' },
+                                        { text: 'Zoom In', value: 'zoom-in' }
+                                    ]
+                                }
+                            ]
+                        },
+                        buttons: [
+                            {
+                                type: 'cancel',
+                                text: 'İptal'
+                            },
+                            {
+                                type: 'submit',
+                                text: 'Uygula',
+                                primary: true
+                            }
+                        ],
+                        onSubmit: function (api) {
+                            const data = api.getData();
+                            const selectedNode = editor.selection.getNode();
+
+                            if (selectedNode && selectedNode.tagName === 'IMG') {
+                                let classes = [];
+
+                                // Mevcut efekt sınıflarını temizle
+                                selectedNode.className = selectedNode.className.replace(/\b(shadow-|border-|rounded-|hover-|small|medium|large|sepia|grayscale|blur-soft|brightness|contrast|fade-in|slide-in-|zoom-in)\S*/g, '');
+
+                                // Yeni sınıfları ekle
+                                if (data.shadow) classes.push(data.shadow);
+                                if (data.border) classes.push(data.border);
+                                if (data.rounded) classes.push(data.rounded);
+                                if (data.size) classes.push(data.size);
+                                if (data.hover) classes.push(data.hover);
+                                if (data.filter) classes.push(data.filter);
+                                if (data.animation) classes.push(data.animation);
+
+                                selectedNode.className = classes.join(' ');
+                                api.close();
+                            } else {
+                                alert('Lütfen önce bir resim seçin!');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    // Initialize TinyMCE editor for German content
+    tinymce.init({
+        selector: '#content_de',
+        height: 500,
+        menubar: true,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons',
+            'template', 'codesample', 'hr', 'pagebreak', 'nonbreaking', 'toc',
+            'textpattern', 'noneditable', 'quickbars', 'paste'
+        ],
+        toolbar: 'undo redo | blocks | ' +
+            'bold italic forecolor backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help | image media link | code | fullscreen | ' +
+            'emoticons | table | searchreplace | wordcount | preview | ' +
+            'imageeffects',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+        language: 'de',
+        language_url: 'https://cdn.jsdelivr.net/npm/tinymce@6.7.2/langs/de.js',
+        branding: false,
+        promotion: false,
+        license_key: 'gpl',
+        images_upload_url: '/admin/upload-image',
+        images_upload_credentials: true,
+        images_upload_handler: function (blobInfo, success, failure, progress) {
+            return new Promise(function(resolve, reject) {
+                const formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                const xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+
+                if (progress && typeof progress === 'function') {
+                    xhr.upload.onprogress = function (e) {
+                        if (e.lengthComputable) {
+                            progress(e.loaded / e.total * 100);
+                        }
+                    };
+                }
+
+                xhr.onload = function () {
+                    let json;
+                    try {
+                        json = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        failure('Invalid JSON response: ' + xhr.responseText);
+                        reject('Invalid JSON response');
+                        return;
+                    }
+
+                    if (xhr.status === 403) {
+                        failure('HTTP Error: ' + xhr.status + ' - ' + (json.message || 'Forbidden'), { remove: true });
+                        reject('Forbidden');
+                        return;
+                    }
+
+                    if (xhr.status < 200 || xhr.status >= 300) {
+                        failure('HTTP Error: ' + xhr.status + ' - ' + (json.message || 'Unknown error'));
+                        reject('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+
+                    if (!json || !json.success || typeof json.url !== 'string') {
+                        failure('Upload failed: ' + (json.message || 'Invalid response format'));
+                        reject('Invalid response');
+                        return;
+                    }
+
+                    success(json.url);
+                    resolve(json.url);
+                };
+
+                xhr.onerror = function () {
+                    const errorMsg = 'Image upload failed due to a network error. Code: ' + xhr.status;
+                    failure(errorMsg);
+                    reject(errorMsg);
+                };
+
+                xhr.ontimeout = function () {
+                    const errorMsg = 'Image upload timed out';
+                    failure(errorMsg);
+                    reject(errorMsg);
+                };
+
+                xhr.open('POST', '/admin/upload-image');
+                xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                xhr.timeout = 30000;
+                xhr.send(formData);
+            });
+        },
+        paste_data_images: true,
+        images_file_types: 'jpeg,jpg,png,gif,webp',
+        automatic_uploads: true,
+        setup: function (editor) {
+            editor.on('change', function () {
+                editor.save();
+            });
+        }
+    });
+});
+</script>
+@endsection

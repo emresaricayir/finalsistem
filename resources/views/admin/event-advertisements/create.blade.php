@@ -1,0 +1,75 @@
+@extends('admin.layouts.app')
+
+@section('title', 'Yeni Etkinlik Reklamı')
+
+@section('content')
+<div class="p-6">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
+                <h3 class="text-2xl font-bold text-white flex items-center">
+                    <i class="fas fa-plus mr-3"></i>
+                    Yeni Etkinlik Reklamı
+                </h3>
+            </div>
+
+            <div class="p-6">
+                <form action="{{ route('admin.event-advertisements.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="mt-6">
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Başlık</label>
+                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 @error('title') border-red-500 @enderror"
+                               id="title" name="title" value="{{ old('title') }}" required>
+                        @error('title')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mt-6">
+                        <label for="content" class="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
+                        <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 @error('content') border-red-500 @enderror"
+                                  id="content" name="content" rows="4" placeholder="Reklam açıklamasını yazın...">{{ old('content') }}</textarea>
+                        @error('content')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="mt-6">
+                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Resim</label>
+                        <input type="file" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 @error('image') border-red-500 @enderror"
+                               id="image" name="image" accept="image/*">
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-sm text-gray-500">JPEG, PNG, JPG, GIF formatları desteklenir.</p>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="flex items-center">
+                            <input type="checkbox" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                                   id="is_active" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                            <label for="is_active" class="ml-2 block text-sm text-gray-700">
+                                Reklamı aktif et
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                        <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Reklamı Kaydet
+                        </button>
+
+                        <a href="{{ route('admin.event-advertisements.index') }}" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-200 flex items-center justify-center">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Geri Dön
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
