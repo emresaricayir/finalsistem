@@ -218,7 +218,24 @@
     <!-- Copyright Section -->
     <div class="relative border-t border-white/10 py-4 sm:py-6 md:py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center space-y-1 sm:space-y-2">
+            <div class="text-center space-y-2 sm:space-y-3">
+                <!-- Legal Links -->
+                <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                    <a href="/sayfa/datenschutz" class="text-gray-300 hover:text-white transition-colors duration-200 text-xs sm:text-sm">
+                        {{ __('common.privacy_policy') }}
+                    </a>
+                    <span class="text-gray-500">|</span>
+                    <a href="/sayfa/impressum" class="text-gray-300 hover:text-white transition-colors duration-200 text-xs sm:text-sm">
+                        {{ __('common.impressum') }}
+                    </a>
+                    @if(\App\Models\Page::where('slug', 'cerez-politikasi')->exists())
+                    <span class="text-gray-500">|</span>
+                    <a href="/sayfa/cerez-politikasi" class="text-gray-300 hover:text-white transition-colors duration-200 text-xs sm:text-sm">
+                        {{ __('common.cookie_policy') }}
+                    </a>
+                    @endif
+                </div>
+                
                 <p class="text-gray-300 font-medium text-xs sm:text-sm md:text-base">
                     &copy; {{ date('Y') }} {{ \App\Models\Settings::get('organization_name', 'Cami Üyelik Sistemi') }} - {{ __('common.all_rights_reserved') }}.
                 </p>

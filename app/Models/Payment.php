@@ -54,8 +54,11 @@ class Payment extends Model
     protected static function booted(): void
     {
         static::deleting(function (Payment $payment) {
-            // Pivot tablosunda kayıt kalmaması için her silmede ilişkiyi temizle
-            $payment->dues()->detach();
+            // Sadece force delete durumunda pivot tablo ilişkilerini sil
+            // Soft delete durumunda ilişkiler korunmalı ki restore edildiğinde geri gelsin
+            if ($payment->isForceDeleting()) {
+                $payment->dues()->detach();
+            }
         });
     }
 
@@ -82,7 +85,8 @@ class Payment extends Model
      */
     public static function hasMemberPaidForMonth($memberId, $year, $month)
     {
-        return static::where('member_id', $memberId)
+        return static::withoutTrashed()
+            ->where('member_id', $memberId)
             ->whereHas('dues', function($query) use ($year, $month) {
                 $query->whereYear('due_date', $year)
                       ->whereMonth('due_date', $month);
@@ -95,9 +99,11 @@ class Payment extends Model
      */
     public static function isDueAlreadyPaid($dueId)
     {
-        return static::whereHas('dues', function($query) use ($dueId) {
-            $query->where('dues.id', $dueId);
-        })->exists();
+        return static::withoutTrashed()
+            ->whereHas('dues', function($query) use ($dueId) {
+                $query->where('dues.id', $dueId);
+            })
+            ->exists();
     }
 
     /**

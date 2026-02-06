@@ -167,6 +167,18 @@ class MarkPaidDues extends Command
                         continue;
                     }
 
+                    // ÖNEMLİ: Duplicate kontrolü - Bu aidat zaten ödenmiş mi?
+                    if (Payment::isDueAlreadyPaid($due->id)) {
+                        $this->warn("   ⚠️  Aidat ID {$due->id} zaten ödenmiş, atlanıyor...");
+                        continue;
+                    }
+
+                    // ÖNEMLİ: Bu üye için aynı ay/yıl için başka bir ödeme var mı?
+                    if (Payment::hasMemberPaidForMonth($member->id, $year, $month)) {
+                        $this->warn("   ⚠️  {$year}-{$month} zaten ödenmiş, atlanıyor...");
+                        continue;
+                    }
+
                     // Ödeme kaydı oluştur
                     $payment = Payment::create([
                         'member_id' => $member->id,

@@ -434,7 +434,34 @@
                 </div>
             </div>
 
+            <!-- Privacy Policy Consent (DSGVO) -->
+            <div class="bg-teal-50 border border-teal-200 rounded-2xl p-6 mb-6">
+                <div class="flex items-start mb-4">
+                    <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-shield-alt text-teal-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-teal-900 mb-2">
+                            🔒 {{ __('common.privacy_consent_title') }}
+                        </h4>
+                        <p class="text-sm text-teal-700">
+                            {{ __('common.privacy_consent_desc') }}
+                        </p>
+                    </div>
+                </div>
 
+                <div class="flex items-start space-x-3 p-4 bg-white rounded-lg border border-teal-200">
+                    <input type="checkbox" name="privacy_consent" id="privacy_consent" value="1" required
+                           class="w-5 h-5 theme-link-icon border-2 border-gray-300 rounded focus:ring-teal-500 focus:ring-2 mt-0.5">
+                    <label for="privacy_consent" class="text-sm text-gray-800 cursor-pointer leading-relaxed">
+                        @if(app()->getLocale() === 'de')
+                            Ich habe die <a href="/sayfa/datenschutz" target="_blank" class="underline font-semibold text-teal-700 hover:text-teal-900">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu. *
+                        @else
+                            <a href="/sayfa/datenschutz" target="_blank" class="underline font-semibold text-teal-700 hover:text-teal-900">Gizlilik Politikasını</a> okudum ve kişisel verilerimin işlenmesine onay veriyorum. *
+                        @endif
+                    </label>
+                </div>
+            </div>
 
             <!-- Digital Signature Section -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
@@ -519,6 +546,7 @@
         // Translation strings for JavaScript
         const translations = {
             ageWarning: '{{ __('common.age_warning_desc') }}',
+            privacyConsentRequired: '@if(app()->getLocale() === "de")Bitte stimmen Sie der Datenschutzerklärung zu.@elseLütfen gizlilik politikasını kabul edin.@endif',
             sepaAgreementRequired: '{{ __('common.sepa_agreement_text') }}',
             bankDetailsRequired: '{{ __('common.bank_details_required') }}',
             signatureRequired: '{{ __('common.please_sign') }}',
@@ -857,6 +885,7 @@
             const lastschriftRadios = document.querySelectorAll('input[name="payment_method"][value^="lastschrift"]');
             const isLastschriftSelected = Array.from(lastschriftRadios).some(radio => radio.checked);
             const sepaAgreement = document.getElementById('sepa_agreement');
+            const privacyConsent = document.getElementById('privacy_consent');
             const signatureConfirmation = document.getElementById('signature_confirmation');
 
             // Check age requirement (16 years old)
@@ -876,6 +905,14 @@
                     birthDateInput.focus();
                     return false;
                 }
+            }
+
+            // Check privacy consent (DSGVO requirement)
+            if (!privacyConsent.checked) {
+                e.preventDefault();
+                alert(translations.privacyConsentRequired);
+                privacyConsent.focus();
+                return false;
             }
 
             // Check SEPA agreement if lastschrift is selected

@@ -392,6 +392,21 @@ class PaymentController extends Controller
 
                 $createdPayments[] = $payment;
                 $processedCount++;
+                
+                // Log access (DSGVO - Veri erişim kaydı)
+                \App\Models\AccessLog::create([
+                    'member_id' => $validated['member_id'],
+                    'user_id' => auth()->id(),
+                    'action' => 'payment_create',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'details' => [
+                        'payment_id' => $payment->id,
+                        'amount' => $payment->amount,
+                        'due_ids' => [$due->id],
+                        'payment_date' => $payment->payment_date->format('Y-m-d'),
+                    ],
+                ]);
             }
         });
 
@@ -727,6 +742,21 @@ class PaymentController extends Controller
 
             // Detach dues relationship
             $payment->dues()->detach();
+
+            // Log access (DSGVO - Veri erişim kaydı) - Silmeden önce logla
+            \App\Models\AccessLog::create([
+                'member_id' => $payment->member_id,
+                'user_id' => auth()->id(),
+                'action' => 'payment_delete',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'details' => [
+                    'payment_id' => $payment->id,
+                    'amount' => $payment->amount,
+                    'payment_date' => $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
+                    'related_due_ids' => $relatedDues->pluck('id')->toArray(),
+                ],
+            ]);
 
             // Delete the payment
             $payment->delete();

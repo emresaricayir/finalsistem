@@ -166,7 +166,7 @@
 
                     <div>
                         <span class="text-sm font-medium text-gray-500">Oluşturan</span>
-                        <p class="text-gray-900">{{ $announcement->creator->name }}</p>
+                        <p class="text-gray-900">{{ $announcement->creator ? $announcement->creator->name : 'Silinmiş Kullanıcı' }}</p>
                     </div>
 
                     @if($announcement->start_date)

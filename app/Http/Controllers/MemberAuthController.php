@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\Payment;
 use App\Models\Settings;
+use App\Models\DeletionRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -410,5 +411,179 @@ class MemberAuthController extends Controller
         ];
 
         return view('member.application-html', compact('member', 'settings'));
+    }
+
+    /**
+     * Export member data (DSGVO - Right to data portability)
+     */
+    public function exportData($format = 'json')
+    {
+        $memberId = session('member_id');
+        if (!$memberId) {
+            return redirect()->route('member.login');
+        }
+
+        $member = Member::findOrFail($memberId);
+
+        // Collect all member data
+        $memberData = [
+            'export_date' => now()->format('Y-m-d H:i:s'),
+            'member_information' => [
+                'member_no' => $member->member_no,
+                'name' => $member->name,
+                'surname' => $member->surname,
+                'gender' => $member->gender,
+                'email' => $member->email,
+                'phone' => $member->phone,
+                'birth_date' => $member->birth_date ? $member->birth_date->format('Y-m-d') : null,
+                'birth_place' => $member->birth_place,
+                'nationality' => $member->nationality,
+                'address' => $member->address,
+                'occupation' => $member->occupation,
+                'family_members_count' => $member->family_members_count,
+                'membership_date' => $member->membership_date ? $member->membership_date->format('Y-m-d') : null,
+                'status' => $member->status,
+                'application_status' => $member->application_status,
+                'application_date' => $member->application_date ? $member->application_date->format('Y-m-d H:i:s') : null,
+                'approved_at' => $member->approved_at ? $member->approved_at->format('Y-m-d H:i:s') : null,
+                'privacy_consent' => $member->privacy_consent,
+                'privacy_consent_date' => $member->privacy_consent_date ? $member->privacy_consent_date->format('Y-m-d H:i:s') : null,
+            ],
+            'payment_information' => [
+                'monthly_dues' => (float) $member->monthly_dues,
+                'payment_method' => $member->payment_method,
+                'payment_frequency' => $member->payment_frequency,
+                'payment_due_date' => $member->payment_due_date ? $member->payment_due_date->format('Y-m-d') : null,
+                'sepa_agreement' => $member->sepa_agreement,
+                'mandate_number' => $member->mandate_number,
+                'account_holder' => $member->account_holder,
+                'bank_name' => $member->bank_name,
+                'iban' => $member->iban,
+                'bic' => $member->bic,
+            ],
+            'payments' => $member->payments()->withoutTrashed()->orderBy('payment_date', 'desc')->get()->map(function($payment) {
+                return [
+                    'id' => $payment->id,
+                    'amount' => (float) $payment->amount,
+                    'payment_method' => $payment->payment_method,
+                    'payment_date' => $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
+                    'receipt_no' => $payment->receipt_no,
+                    'description' => $payment->description,
+                    'created_at' => $payment->created_at->format('Y-m-d H:i:s'),
+                ];
+            })->toArray(),
+        ];
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        // Not: Üye kendi verisini indirdiği için user_id = null (kendi işlemi)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => null, // Üye kendi verisini indiriyor
+            'action' => 'export',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'format' => $format,
+                'exported_by_member' => true,
+            ],
+        ]);
+
+        if ($format === 'json') {
+            return response()->json($memberData, 200, [
+                'Content-Type' => 'application/json; charset=utf-8',
+            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            ->header('Content-Disposition', 'attachment; filename="meine-daten-' . $member->member_no . '-' . now()->format('Y-m-d') . '.json"');
+        }
+
+        // PDF format
+        $settings = [
+            'organization_name' => Settings::get('organization_name', 'Cami Derneği'),
+            'organization_address' => Settings::get('organization_address', ''),
+            'organization_phone' => Settings::get('organization_phone', ''),
+            'organization_email' => Settings::get('organization_email', 'info@camidernegi.com'),
+        ];
+
+        try {
+            // Render the view to HTML first
+            $html = view('member.data-export-pdf', compact('memberData', 'member', 'settings'))->render();
+            
+            // Load HTML and set options
+            $pdf = Pdf::loadHTML($html)
+                ->setPaper('a4', 'portrait')
+                ->setOptions([
+                    'defaultFont' => 'DejaVu Sans',
+                    'isHtml5ParserEnabled' => true,
+                    'isRemoteEnabled' => true,
+                ]);
+            
+            return $pdf->download('meine-daten-' . $member->member_no . '-' . now()->format('Y-m-d') . '.pdf');
+        } catch (\Exception $e) {
+            \Log::error('PDF export error: ' . $e->getMessage());
+            return redirect()->route('member.profile')
+                ->with('error', 'PDF oluşturulurken bir hata oluştu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Request data deletion (DSGVO - Right to erasure)
+     */
+    public function requestDeletion(Request $request)
+    {
+        $memberId = session('member_id');
+        if (!$memberId) {
+            return redirect()->route('member.login');
+        }
+
+        $member = Member::findOrFail($memberId);
+
+        // Check if there's already a pending request
+        $existingRequest = DeletionRequest::where('member_id', $member->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return back()->with('error', 'Zaten bekleyen bir silme talebiniz var.');
+        }
+
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:1000',
+            'confirm' => 'required|accepted',
+        ]);
+
+        DeletionRequest::create([
+            'member_id' => $member->id,
+            'reason' => $validated['reason'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        return back()->with('success', 'Silme talebiniz başarıyla gönderildi. Yönetim kurulu tarafından değerlendirilecektir.');
+    }
+
+    /**
+     * Withdraw privacy consent (DSGVO - Right to withdraw consent)
+     */
+    public function withdrawPrivacyConsent(Request $request)
+    {
+        $memberId = session('member_id');
+        if (!$memberId) {
+            return redirect()->route('member.login');
+        }
+
+        $member = Member::findOrFail($memberId);
+
+        if (!$member->privacy_consent) {
+            return back()->with('error', 'Zaten gizlilik politikası rızanız bulunmuyor.');
+        }
+
+        $validated = $request->validate([
+            'confirm' => 'required|accepted',
+        ]);
+
+        $member->update([
+            'privacy_consent' => false,
+            'privacy_consent_date' => null,
+        ]);
+
+        return back()->with('success', 'Gizlilik politikası rızanız başarıyla geri çekildi.');
     }
 }

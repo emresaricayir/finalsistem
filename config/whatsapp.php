@@ -9,6 +9,11 @@ return [
     | Meta WhatsApp Business API ayarları
     | https://developers.facebook.com/docs/whatsapp/cloud-api
     |
+    | NOT: WhatsApp Cloud API kullanımı şu an devre dışı bırakılmıştır.
+    | DSGVO uyumluluğu için üçüncü taraf servis kullanımından kaçınılmaktadır.
+    | Bu özellik aktif edilmek istenirse, gizlilik politikasında WhatsApp Cloud API
+    | kullanımı ve veri işleme açıklaması eklenmelidir.
+    |
     */
 
     'app_id' => env('WHATSAPP_APP_ID'),

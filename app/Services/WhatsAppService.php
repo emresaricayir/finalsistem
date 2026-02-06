@@ -22,8 +22,22 @@ class WhatsAppService
         ]);
     }
 
+    /**
+     * WhatsApp Cloud API kullanımı şu an devre dışı bırakılmıştır.
+     * DSGVO uyumluluğu için üçüncü taraf servis kullanımından kaçınılmaktadır.
+     * 
+     * Bu özellik aktif edilmek istenirse, gizlilik politikasında WhatsApp Cloud API
+     * kullanımı ve veri işleme açıklaması eklenmelidir.
+     */
     public function sendMessage($phone, $message)
     {
+        // WhatsApp Cloud API kullanımı devre dışı
+        return [
+            'success' => false,
+            'error' => 'WhatsApp Cloud API entegrasyonu şu an aktif değildir. Bu özellik devre dışı bırakılmıştır.'
+        ];
+
+        /* DEVRE DIŞI: WhatsApp Cloud API kullanımı
         try {
             // Rate limit kontrolü
             $this->checkRateLimit();
@@ -65,6 +79,7 @@ class WhatsAppService
                 'error' => 'Mesaj gönderilemedi: ' . $e->getMessage()
             ];
         }
+        */
     }
 
     private function formatPhone($phone)

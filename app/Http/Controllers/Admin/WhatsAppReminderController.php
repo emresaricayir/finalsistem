@@ -133,9 +133,15 @@ class WhatsAppReminderController extends Controller
             // Üyeye özel mesaj oluştur
             $personalizedMessage = $this->personalizeMessage($messageTemplate, $member);
 
+            // WhatsApp Cloud API kullanımı devre dışı - DSGVO uyumluluğu için
             // WhatsApp mesajı gönder
-            $result = $this->whatsapp->sendMessage($member->phone, $personalizedMessage);
+            // $result = $this->whatsapp->sendMessage($member->phone, $personalizedMessage);
+            
+            // Şu an WhatsApp Cloud API kullanılmıyor
+            $errorCount++;
+            $errors[] = "{$member->full_name} - WhatsApp Cloud API entegrasyonu şu an aktif değildir";
 
+            /* DEVRE DIŞI: WhatsApp Cloud API kullanımı
             if ($result['success']) {
                 $successCount++;
 
@@ -155,6 +161,7 @@ class WhatsAppReminderController extends Controller
                     'error' => $result['error']
                 ]);
             }
+            */
 
             // Rate limit - 12 saniye bekle (5 mesaj/dakika)
             if ($successCount > 0 && $successCount % 1 === 0) {

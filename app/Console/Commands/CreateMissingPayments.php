@@ -69,6 +69,13 @@ class CreateMissingPayments extends Command
         }
 
         foreach ($problematicDues as $due) {
+            // ÖNEMLİ: Duplicate kontrolü - Bu aidat için zaten ödeme kaydı var mı?
+            // (whereDoesntHave kontrolü var ama yine de güvenlik için kontrol edelim)
+            if (Payment::isDueAlreadyPaid($due->id)) {
+                $this->warn("⚠️  Aidat ID {$due->id} için zaten ödeme kaydı var, atlanıyor...");
+                continue;
+            }
+
             if (!$dryRun) {
                 // Payment kaydı oluştur
                 $payment = Payment::create([

@@ -230,6 +230,17 @@ return [
     'bank_details_required' => 'Lastschrift için tüm banka bilgileri zorunludur.',
     'signature_confirmation_required' => 'Lütfen imza beyanını onaylayın',
     
+    // Privacy Consent (DSGVO)
+    'privacy_consent_title' => 'Veri İşleme Onayı',
+    'privacy_consent_desc' => 'DSGVO gereği kişisel verilerinizin işlenmesi için onayınız gerekmektedir.',
+    'privacy_consent_required' => 'Gizlilik politikası onayı zorunludur.',
+    
+    // Data Export (DSGVO - Right to data portability)
+    'data_export_title' => 'Verilerimi İndir',
+    'data_export_desc' => 'DSGVO Madde 20 gereği kişisel verilerinizi JSON veya PDF formatında indirebilirsiniz.',
+    'download_json' => 'JSON İndir',
+    'download_pdf' => 'PDF İndir',
+    
     // Email Subjects
     'email_new_member_subject' => 'Yeni Üye Kaydı',
     'email_member_approval_subject' => 'Üyeliğiniz Onaylandı',
@@ -375,4 +386,37 @@ return [
     'no_videos_found' => 'Henüz video bulunmuyor',
     'no_videos_found_desc' => 'Bu kategoride henüz video eklenmemiş.',
     'watch' => 'İzle',
+    
+    // Data Deletion (DSGVO - Right to erasure)
+    'data_deletion_title' => 'Verilerimi Sil',
+    'data_deletion_desc' => 'DSGVO Madde 17 gereği kişisel verilerinizin silinmesini talep edebilirsiniz.',
+    'data_deletion_warning' => 'Önemli Uyarı',
+    'data_deletion_warning_desc' => 'Bu işlem geri alınamaz. Silme talebiniz yönetim kurulu tarafından değerlendirilecek ve onaylandıktan sonra verileriniz silinecektir.',
+    'deletion_reason' => 'Silme Sebebi',
+    'deletion_reason_placeholder' => 'Neden verilerinizin silinmesini istiyorsunuz? (İsteğe bağlı)',
+    'deletion_confirm' => 'Verilerimin silinmesini talep ettiğimi ve bu işlemin geri alınamaz olduğunu anladım.',
+    'submit_deletion_request' => 'Silme Talebi Gönder',
+    'deletion_request_pending' => 'Bekleyen Silme Talebi',
+    'deletion_request_pending_desc' => 'Silme talebiniz yönetim kurulu tarafından değerlendiriliyor. Onaylandıktan sonra verileriniz silinecektir.',
+    'optional' => 'İsteğe bağlı',
+    
+    // Legal Pages (DSGVO)
+    'privacy_policy' => 'Gizlilik Politikası',
+    'impressum' => 'Yasal Bilgiler',
+    'cookie_policy' => 'Çerez Politikası',
+    
+    // Cookie Consent (DSGVO)
+    'cookie_consent_title' => 'Çerez Kullanımı',
+    'cookie_consent_desc' => 'Bu web sitesi, size en iyi deneyimi sunmak için çerezler kullanmaktadır. Sitemizi kullanmaya devam ederek çerez kullanımını kabul etmiş olursunuz.',
+    'accept_cookies' => 'Kabul Et',
+    'decline_cookies' => 'Reddet',
+    'learn_more' => 'Daha fazla bilgi',
+    
+    // Consent Withdrawal (DSGVO - Right to withdraw consent)
+    'consent_withdrawal_title' => 'Rıza Geri Çekme',
+    'consent_withdrawal_desc' => 'DSGVO Madde 7(3) gereği gizlilik politikası rızanızı istediğiniz zaman geri çekebilirsiniz.',
+    'consent_withdrawal_info_title' => 'Bilgilendirme',
+    'consent_withdrawal_info_desc' => 'Rızanızı geri çekmeniz durumunda, verilerinizin işlenmesi için yasal bir dayanak olmadığı sürece verileriniz silinebilir. Ancak üyelik sözleşmesi ve yasal yükümlülükler nedeniyle bazı verileriniz saklanmaya devam edebilir.',
+    'consent_withdrawal_confirm' => 'Gizlilik politikası rızamı geri çekmek istediğimi ve bunun sonuçlarını anladığımı onaylıyorum.',
+    'withdraw_consent' => 'Rızayı Geri Çek',
 ];

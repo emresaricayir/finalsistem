@@ -63,6 +63,27 @@ class MarkAllOverduePaid extends Command
                 try {
                     $member = $due->member;
 
+                    // ÖNEMLİ: Duplicate kontrolü - Bu aidat zaten ödenmiş mi?
+                    if (Payment::isDueAlreadyPaid($due->id)) {
+                        $this->warn("⚠️  Aidat ID {$due->id} zaten ödenmiş, atlanıyor...");
+                        $progressBar->advance();
+                        continue;
+                    }
+
+                    // ÖNEMLİ: Bu üye için aynı ay/yıl için başka bir ödeme var mı?
+                    if (Payment::hasMemberPaidForMonth($due->member_id, $due->year, $due->month)) {
+                        $this->warn("⚠️  Üye {$member->full_name} için {$due->year}-{$due->month} zaten ödenmiş, atlanıyor...");
+                        $progressBar->advance();
+                        continue;
+                    }
+
+                    // ÖNEMLİ: Aidat durumu kontrolü
+                    if ($due->status === 'paid') {
+                        $this->warn("⚠️  Aidat ID {$due->id} durumu zaten 'paid', atlanıyor...");
+                        $progressBar->advance();
+                        continue;
+                    }
+
                     // Üyenin ödeme yöntemini kullan, yoksa varsayılan olarak bank_transfer
                     $paymentMethod = $member->payment_method ?? 'bank_transfer';
 

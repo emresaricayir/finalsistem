@@ -69,6 +69,22 @@ class DueController extends Controller
             abort(403, 'Bu işlem için yetkiniz yok.');
         }
 
+        // Log access (DSGVO - Veri erişim kaydı) - Silmeden önce logla
+        \App\Models\AccessLog::create([
+            'member_id' => $due->member_id,
+            'user_id' => auth()->id(),
+            'action' => 'due_delete',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'due_id' => $due->id,
+                'amount' => $due->amount,
+                'year' => $due->year,
+                'month' => $due->month,
+                'status' => $due->status,
+            ],
+        ]);
+
         $due->delete();
 
         return redirect()->route('admin.dues.index')
@@ -392,8 +408,24 @@ class DueController extends Controller
             if ($existingDue && $existingDue->trashed()) {
                 $existingDue->restore();
                 $createdCount++;
+                
+                // Log access (DSGVO - Veri erişim kaydı)
+                \App\Models\AccessLog::create([
+                    'member_id' => $memberId,
+                    'user_id' => auth()->id(),
+                    'action' => 'due_create',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'details' => [
+                        'due_id' => $existingDue->id,
+                        'amount' => $existingDue->amount,
+                        'year' => $validated['year'],
+                        'month' => $validated['month'],
+                        'action_type' => 'restored',
+                    ],
+                ]);
             } elseif (!$existingDue) {
-                Due::create([
+                $newDue = Due::create([
                     'member_id' => $memberId,
                     'year' => $validated['year'],
                     'month' => $validated['month'],
@@ -402,6 +434,22 @@ class DueController extends Controller
                     'status' => 'pending',
                 ]);
                 $createdCount++;
+                
+                // Log access (DSGVO - Veri erişim kaydı)
+                \App\Models\AccessLog::create([
+                    'member_id' => $memberId,
+                    'user_id' => auth()->id(),
+                    'action' => 'due_create',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'details' => [
+                        'due_id' => $newDue->id,
+                        'amount' => $newDue->amount,
+                        'year' => $validated['year'],
+                        'month' => $validated['month'],
+                        'action_type' => 'created',
+                    ],
+                ]);
             }
         }
 
@@ -436,8 +484,25 @@ class DueController extends Controller
             if ($existingDue && $existingDue->trashed()) {
                 $existingDue->restore();
                 $createdCount++;
+                
+                // Log access (DSGVO - Veri erişim kaydı)
+                \App\Models\AccessLog::create([
+                    'member_id' => $member->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'due_create',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'details' => [
+                        'due_id' => $existingDue->id,
+                        'amount' => $existingDue->amount,
+                        'year' => $validated['year'],
+                        'month' => $validated['month'],
+                        'action_type' => 'restored',
+                        'bulk_operation' => true,
+                    ],
+                ]);
             } elseif (!$existingDue) {
-                Due::create([
+                $newDue = Due::create([
                     'member_id' => $member->id,
                     'year' => $validated['year'],
                     'month' => $validated['month'],
@@ -446,6 +511,23 @@ class DueController extends Controller
                     'status' => 'pending',
                 ]);
                 $createdCount++;
+                
+                // Log access (DSGVO - Veri erişim kaydı)
+                \App\Models\AccessLog::create([
+                    'member_id' => $member->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'due_create',
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'details' => [
+                        'due_id' => $newDue->id,
+                        'amount' => $newDue->amount,
+                        'year' => $validated['year'],
+                        'month' => $validated['month'],
+                        'action_type' => 'created',
+                        'bulk_operation' => true,
+                    ],
+                ]);
             }
         }
 

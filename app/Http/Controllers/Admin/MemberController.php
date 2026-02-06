@@ -7,6 +7,7 @@ use App\Models\Member;
 use App\Models\Due;
 use App\Models\Settings;
 use App\Models\User;
+use App\Models\DeletionRequest;
 use App\Imports\MembersImport;
 use App\Mail\MemberApprovalMail;
 use App\Mail\AdminNewMemberNotificationMail;
@@ -165,7 +166,13 @@ class MemberController extends Controller
         // Get all members for modal dropdown (without pagination)
         $allMembers = Member::orderBy('surname')->orderBy('name')->get();
 
-        return view('admin.members.index', compact('members', 'allMembers', 'totalMembers', 'activeMembers', 'inactiveMembers', 'suspendedMembers'));
+        // Get pending deletion requests
+        $pendingDeletionRequests = DeletionRequest::with(['member', 'reviewedBy'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.members.index', compact('members', 'allMembers', 'totalMembers', 'activeMembers', 'inactiveMembers', 'suspendedMembers', 'pendingDeletionRequests'));
     }
 
     /**
@@ -311,6 +318,15 @@ class MemberController extends Controller
             'payments.recordedBy',
         ])->findOrFail($id);
 
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => auth()->id(),
+            'action' => 'view',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         // JSON response for AJAX requests
         if (request()->wantsJson()) {
             return response()->json($member);
@@ -325,6 +341,16 @@ class MemberController extends Controller
     public function edit(string $id)
     {
         $member = Member::findOrFail($id);
+        
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => auth()->id(),
+            'action' => 'edit',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+        
         return view('admin.members.edit', compact('member'));
     }
 
@@ -375,6 +401,18 @@ class MemberController extends Controller
         $statusChanged = $member->status != $validated['status'];
 
         $member->update($validated);
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => auth()->id(),
+            'action' => 'edit',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'changed_fields' => array_keys($member->getChanges()),
+            ],
+        ]);
 
         // Eğer üye durumu değiştiyse, güvenlik kontrollerini yap
         if ($statusChanged) {
@@ -755,6 +793,18 @@ class MemberController extends Controller
         $member->update([
             'deletion_reason' => $request->deletion_reason,
             'deleted_by' => auth()->id()
+        ]);
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => auth()->id(),
+            'action' => 'delete',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'deletion_reason' => $request->deletion_reason,
+            ],
         ]);
 
         $member->delete();
@@ -1836,7 +1886,242 @@ class MemberController extends Controller
         }
 
         $member = Member::onlyTrashed()->findOrFail($id);
-        $member->restore();
+        
+        // Restore öncesi ödeme sayısını kaydet
+        $paymentCountBefore = \DB::table('payments')
+            ->where('member_id', $member->id)
+            ->whereNull('deleted_at')
+            ->count();
+        
+        // TAMAMEN BYPASS: Observer'ı geçici olarak devre dışı bırak
+        // Bu sayede hiçbir event tetiklenmez ve duplicate ödeme oluşmaz
+        
+        // Restore öncesi silinmiş ödeme ve aidat sayılarını kaydet
+        $deletedPaymentCount = \DB::table('payments')
+            ->where('member_id', $member->id)
+            ->whereNotNull('deleted_at')
+            ->count();
+        
+        $deletedDueCount = \DB::table('dues')
+            ->where('member_id', $member->id)
+            ->whereNotNull('deleted_at')
+            ->count();
+        
+        \Log::info("Starting restore for member {$member->id}", [
+            'deleted_payment_count' => $deletedPaymentCount,
+            'deleted_due_count' => $deletedDueCount,
+            'payment_count_before' => $paymentCountBefore
+        ]);
+        
+        // Restore edilen ödemelerin ID'lerini kaydet (restore öncesi)
+        $restoredPaymentIdsBefore = \DB::table('payments')
+            ->where('member_id', $member->id)
+            ->whereNotNull('deleted_at')
+            ->orderBy('created_at', 'asc')
+            ->pluck('id')
+            ->toArray();
+        
+        \DB::transaction(function() use ($member, $deletedPaymentCount) {
+            // 1. Önce ödemeleri restore et (önemli: önce ödemeler, sonra aidatlar)
+            // Çünkü ödemeler aidatlara bağlı olabilir
+            $restoredPayments = \DB::table('payments')
+                ->where('member_id', $member->id)
+                ->whereNotNull('deleted_at')
+                ->update(['deleted_at' => null]);
+            
+            \Log::info("Restored {$restoredPayments} payments for member {$member->id}");
+            
+            // 2. Sonra aidatları restore et
+            $restoredDues = \DB::table('dues')
+                ->where('member_id', $member->id)
+                ->whereNotNull('deleted_at')
+                ->update(['deleted_at' => null]);
+            
+            \Log::info("Restored {$restoredDues} dues for member {$member->id}");
+            
+            // 3. En son üyeyi restore et (bu observer'ı tetikleyebilir ama withoutEvents ile engelledik)
+            Member::withoutEvents(function() use ($member) {
+                \DB::table('members')
+                    ->where('id', $member->id)
+                    ->update(['deleted_at' => null]);
+            });
+            
+            \Log::info("Restored member {$member->id}");
+            
+            // 4. Restore sonrası hemen kontrol et (transaction içinde)
+            $paymentCountDuringTransaction = \DB::table('payments')
+                ->where('member_id', $member->id)
+                ->whereNull('deleted_at')
+                ->count();
+            
+            \Log::info("Payment count during transaction: {$paymentCountDuringTransaction} for member {$member->id}");
+        });
+        
+        // Restore sonrası ödeme sayısını kontrol et
+        $paymentCountAfter = \DB::table('payments')
+            ->where('member_id', $member->id)
+            ->whereNull('deleted_at')
+            ->count();
+        
+        // ÖNEMLİ: Restore edilen ödemeler duplicate değil, bunlar gerçek ödemeler
+        // Sadece restore sonrası yeni oluşturulan ödemeler duplicate olabilir
+        
+        // Restore sonrası yeni oluşturulan ödemeleri bul (restore edilen ID'lerde olmayanlar)
+        $newPaymentIds = \DB::table('payments')
+            ->where('member_id', $member->id)
+            ->whereNull('deleted_at')
+            ->whereNotIn('id', $restoredPaymentIdsBefore)
+            ->pluck('id')
+            ->toArray();
+        
+        // Eğer yeni oluşturulan ödeme varsa, bunlar duplicate'dir ve silinmeli
+        if (count($newPaymentIds) > 0) {
+            \Log::warning("New payments detected after restore - these are duplicates and will be removed", [
+                'member_id' => $member->id,
+                'payment_count_before' => $paymentCountBefore,
+                'payment_count_after' => $paymentCountAfter,
+                'restored_payment_ids_count' => count($restoredPaymentIdsBefore),
+                'new_payment_ids_count' => count($newPaymentIds),
+                'new_payment_ids' => $newPaymentIds
+            ]);
+            
+            // Yeni oluşturulan ödemeler duplicate'dir, hepsini sil
+            $deletedCount = \DB::table('payments')
+                ->whereIn('id', $newPaymentIds)
+                ->update(['deleted_at' => now()]);
+            
+            \Log::info("Removed {$deletedCount} duplicate payments for member {$member->id} (kept restored payments)", [
+                'deleted_ids' => $newPaymentIds
+            ]);
+        }
+        
+        // ÖNEMLİ: Restore edilen ödemeler arasında da duplicate kontrolü yap
+        // Çünkü restore edilen ödemeler arasında gerçek duplicate'ler olabilir
+        // (aynı amount, date VE aynı aidatlara bağlı olanlar)
+        if (count($restoredPaymentIdsBefore) > 0) {
+            \Log::info("Checking for duplicates among restored payments for member {$member->id}", [
+                'restored_payment_ids_count' => count($restoredPaymentIdsBefore),
+                'payment_count_after' => $paymentCountAfter
+            ]);
+            
+            // Amount ve payment_date bazlı duplicate kontrolü
+            $duplicateGroups = \DB::table('payments')
+                ->select('amount', 'payment_date', \DB::raw('COUNT(*) as count'))
+                ->where('member_id', $member->id)
+                ->whereNull('deleted_at')
+                ->groupBy('amount', 'payment_date')
+                ->having('count', '>', 1)
+                ->get();
+            
+            if ($duplicateGroups->isNotEmpty()) {
+                \Log::warning("Found duplicates by amount/date for member {$member->id}", [
+                    'duplicate_groups' => $duplicateGroups->toArray()
+                ]);
+                
+                $totalDeleted = 0;
+                foreach ($duplicateGroups as $group) {
+                    // Bu amount/date kombinasyonuna sahip tüm ödemeleri al
+                    $paymentsInGroup = \DB::table('payments')
+                        ->where('member_id', $member->id)
+                        ->whereNull('deleted_at')
+                        ->where('amount', $group->amount)
+                        ->where('payment_date', $group->payment_date)
+                        ->orderBy('created_at', 'asc')
+                        ->get();
+                    
+                    // Her ödemenin bağlı olduğu aidatları kontrol et
+                    $paymentDueMap = [];
+                    foreach ($paymentsInGroup as $payment) {
+                        $dueIds = \DB::table('payment_due')
+                            ->where('payment_id', $payment->id)
+                            ->pluck('due_id')
+                            ->toArray();
+                        $paymentDueMap[$payment->id] = $dueIds;
+                    }
+                    
+                    // Gerçek duplicate'leri bul: Aynı amount, date VE aynı aidatlara bağlı olanlar
+                    $paymentGroups = [];
+                    
+                    foreach ($paymentsInGroup as $payment) {
+                        $dueIds = $paymentDueMap[$payment->id];
+                        sort($dueIds); // Array'i sırala
+                        $key = $group->amount . '|' . $group->payment_date . '|' . implode(',', $dueIds);
+                        
+                        if (!isset($paymentGroups[$key])) {
+                            $paymentGroups[$key] = [];
+                        }
+                        $paymentGroups[$key][] = $payment->id;
+                    }
+                    
+                    // Duplicate setlerini işle (aynı key'e sahip birden fazla ödeme varsa)
+                    foreach ($paymentGroups as $key => $duplicateIds) {
+                        // Eğer sadece 1 ödeme varsa, duplicate değil, atla
+                        if (count($duplicateIds) <= 1) {
+                            continue;
+                        }
+                        // İlk ödemeyi koru (en eski restore edilen ödeme)
+                        $keepId = null;
+                        $deleteIds = [];
+                        
+                        foreach ($duplicateIds as $paymentId) {
+                            if (in_array($paymentId, $restoredPaymentIdsBefore)) {
+                                if ($keepId === null) {
+                                    $keepId = $paymentId;
+                                } else {
+                                    // Birden fazla restore edilen ödeme varsa, en eski olanı koru
+                                    $currentCreatedAt = \DB::table('payments')->where('id', $paymentId)->value('created_at');
+                                    $keepCreatedAt = \DB::table('payments')->where('id', $keepId)->value('created_at');
+                                    if ($currentCreatedAt < $keepCreatedAt) {
+                                        $deleteIds[] = $keepId;
+                                        $keepId = $paymentId;
+                                    } else {
+                                        $deleteIds[] = $paymentId;
+                                    }
+                                }
+                            } else {
+                                // Restore edilen ID'lerde yoksa, duplicate olarak işaretle
+                                if ($keepId === null) {
+                                    // İlk ödemeyi koru
+                                    $keepId = $paymentId;
+                                } else {
+                                    $deleteIds[] = $paymentId;
+                                }
+                            }
+                        }
+                        
+                        // Duplicate ödemeleri sil
+                        if (count($deleteIds) > 0 && $keepId !== null) {
+                            $deletedCount = \DB::table('payments')
+                                ->whereIn('id', $deleteIds)
+                                ->update(['deleted_at' => now()]);
+                            
+                            $totalDeleted += $deletedCount;
+                            
+                            $dueIdsStr = implode(',', $paymentDueMap[$keepId]);
+                            \Log::info("Removed {$deletedCount} duplicate payments for member {$member->id} (amount: {$group->amount}, date: {$group->payment_date}, dues: {$dueIdsStr})", [
+                                'kept_id' => $keepId,
+                                'deleted_ids' => $deleteIds
+                            ]);
+                        }
+                    }
+                }
+                
+                if ($totalDeleted > 0) {
+                    \Log::info("Total removed {$totalDeleted} duplicate payments for member {$member->id}");
+                }
+            } else {
+                \Log::info("No duplicate payments found among restored payments for member {$member->id}");
+            }
+        }
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => auth()->id(),
+            'action' => 'restore',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         return redirect()->route('admin.members.deleted')
             ->with('success', 'Üye başarıyla geri getirildi.');
@@ -1856,6 +2141,68 @@ class MemberController extends Controller
 
         return redirect()->route('admin.members.deleted')
             ->with('success', 'Üye kalıcı olarak silindi.');
+    }
+
+    /**
+     * Approve deletion request and soft delete member
+     */
+    public function approveDeletionRequest(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['super_admin', 'admin'])) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        $deletionRequest = DeletionRequest::with('member')->findOrFail($id);
+
+        if ($deletionRequest->status !== 'pending') {
+            return back()->with('error', 'Bu talep zaten işleme alınmış.');
+        }
+
+        $member = $deletionRequest->member;
+
+        // Üyenin yazdığı gerekçeyi member'a kaydet
+        $member->deletion_reason = $deletionRequest->reason;
+        $member->deleted_by = auth()->id();
+        $member->save();
+
+        // Soft delete the member
+        $member->delete();
+
+        // Update deletion request
+        $deletionRequest->update([
+            'status' => 'approved',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'review_notes' => $request->input('review_notes'),
+        ]);
+
+        return redirect()->route('admin.members.index')
+            ->with('success', 'Silme talebi onaylandı ve üye silindi.');
+    }
+
+    /**
+     * Reject deletion request
+     */
+    public function rejectDeletionRequest(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['super_admin', 'admin'])) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        $deletionRequest = DeletionRequest::findOrFail($id);
+
+        if ($deletionRequest->status !== 'pending') {
+            return back()->with('error', 'Bu talep zaten işleme alınmış.');
+        }
+
+        $deletionRequest->update([
+            'status' => 'rejected',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+            'review_notes' => $request->input('review_notes'),
+        ]);
+
+        return back()->with('success', 'Silme talebi reddedildi.');
     }
 
     /**

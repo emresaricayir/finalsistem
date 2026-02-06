@@ -629,8 +629,9 @@
                                             @if($event->image_path)
                                             <img src="{{ asset('storage/' . $event->image_path) }}" 
                                                  alt="{{ $event->title }}" 
-                                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
-                                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                                                 onclick="openPhotoModal('{{ asset('storage/' . $event->image_path) }}', '{{ addslashes($event->title) }}')">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                                             @else
                                             <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                                                 <i class="fas fa-calendar-alt text-gray-400 text-3xl"></i>
@@ -1004,6 +1005,7 @@
                 </div>
         </main>
 
+        @include('partials.cookie-consent')
         @include('partials.footer')
 
         <script>

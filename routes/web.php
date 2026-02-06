@@ -88,11 +88,11 @@ Route::get('/personel-kategori/{category}', [PublicPersonnelController::class, '
 Route::get('/iletisim', [ContactController::class, 'index'])->name('contact.index');
 Route::get('/ara', [PublicController::class, 'search'])->name('search');
 
-// WhatsApp Routes
-Route::post('/whatsapp/send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
-Route::get('/whatsapp/test', function () {
-    return view('whatsapp.test');
-})->name('whatsapp.test');
+// WhatsApp Routes - DEVRE DIŞI: WhatsApp Cloud API kullanımı şu an aktif değildir
+// Route::post('/whatsapp/send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
+// Route::get('/whatsapp/test', function () {
+//     return view('whatsapp.test');
+// })->name('whatsapp.test');
 
 // Admin: Announcement image delete
 Route::middleware(['auth'])->group(function () {
@@ -148,9 +148,14 @@ Route::middleware(['auth', 'verified', 'admin', 'update.last.login'])->prefix('a
     Route::get('members/deleted', [MemberController::class, 'deleted'])->name('members.deleted');
     Route::post('members/{id}/restore', [MemberController::class, 'restore'])->name('members.restore');
     Route::delete('members/{id}/force-delete', [MemberController::class, 'forceDelete'])->name('members.force-delete');
+    Route::post('members/deletion-requests/{id}/approve', [MemberController::class, 'approveDeletionRequest'])->name('members.deletion-requests.approve');
+    Route::post('members/deletion-requests/{id}/reject', [MemberController::class, 'rejectDeletionRequest'])->name('members.deletion-requests.reject');
 
     // Resource routes (must be after specific routes)
     Route::resource('members', MemberController::class);
+
+    // Access Logs (DSGVO - Veri erişim logları) - Sadece super admin
+    Route::get('access-logs', [\App\Http\Controllers\Admin\AccessLogController::class, 'index'])->name('access-logs.index');
 
     // Education Members
     Route::post('education-members/generate-annual-dues', [EducationMemberController::class, 'generateAnnualDues'])->name('education-members.generate-annual-dues');
@@ -284,6 +289,11 @@ Route::middleware(['auth', 'verified', 'admin', 'update.last.login'])->prefix('a
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // 2FA Routes
+    Route::post('profile/two-factor/enable', [ProfileController::class, 'enableTwoFactor'])->name('profile.two-factor.enable');
+    Route::post('profile/two-factor/confirm', [ProfileController::class, 'confirmTwoFactor'])->name('profile.two-factor.confirm');
+    Route::post('profile/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('profile.two-factor.disable');
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
@@ -298,11 +308,11 @@ Route::middleware(['auth', 'verified', 'admin', 'update.last.login'])->prefix('a
     Route::post('notifications/mark-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
     Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
 
-    // WhatsApp Reminders
-    Route::get('whatsapp/due-reminders', [WhatsAppReminderController::class, 'index'])->name('whatsapp.due-reminders');
-    Route::post('whatsapp/send-reminders', [WhatsAppReminderController::class, 'sendReminders'])->name('whatsapp.send-reminders');
-    Route::post('whatsapp/send-bulk-reminders', [WhatsAppReminderController::class, 'sendBulkReminders'])->name('whatsapp.send-bulk-reminders');
-    Route::get('whatsapp/templates', [WhatsAppReminderController::class, 'getTemplates'])->name('whatsapp.templates');
+    // WhatsApp Reminders - DEVRE DIŞI: WhatsApp Cloud API kullanımı şu an aktif değildir
+    // Route::get('whatsapp/due-reminders', [WhatsAppReminderController::class, 'index'])->name('whatsapp.due-reminders');
+    // Route::post('whatsapp/send-reminders', [WhatsAppReminderController::class, 'sendReminders'])->name('whatsapp.send-reminders');
+    // Route::post('whatsapp/send-bulk-reminders', [WhatsAppReminderController::class, 'sendBulkReminders'])->name('whatsapp.send-bulk-reminders');
+    // Route::get('whatsapp/templates', [WhatsAppReminderController::class, 'getTemplates'])->name('whatsapp.templates');
 
 
         // TV Display
@@ -387,6 +397,9 @@ Route::middleware('member.auth')->prefix('uye-panel')->name('member.')->group(fu
     Route::get('/makbuz/{payment}', [MemberAuthController::class, 'generateReceipt'])->name('receipt');
     Route::get('/basvuru-formu', [MemberAuthController::class, 'viewApplication'])->name('application.view');
     Route::get('/basvuru-formu/html', [MemberAuthController::class, 'viewApplicationHtml'])->name('application.html');
+    Route::get('/verilerimi-indir/{format}', [MemberAuthController::class, 'exportData'])->name('data.export')->where('format', 'json|pdf');
+    Route::post('/verilerimi-sil', [MemberAuthController::class, 'requestDeletion'])->name('data.deletion.request');
+    Route::put('/gizlilik-riza-geri-cek', [MemberAuthController::class, 'withdrawPrivacyConsent'])->name('privacy.consent.withdraw');
 });
 
 // Public Display Routes

@@ -6,6 +6,7 @@ use App\Models\Member;
 use App\Models\Due;
 use App\Models\Payment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MemberObserver
 {
@@ -44,6 +45,7 @@ class MemberObserver
         // Soft delete durumunda aidatları ve ödemeleri de soft delete yap
         if (!$member->isForceDeleting()) {
             // Soft delete - aidatları ve ödemeleri de soft delete yap
+            // ÖNEMLİ: Pivot tablo ilişkileri korunmalı (Payment modelinde detach sadece force delete'te yapılıyor)
             Due::where('member_id', $member->id)->delete();
             Payment::where('member_id', $member->id)->delete();
         }
@@ -51,21 +53,16 @@ class MemberObserver
 
     /**
      * Handle the Member "restored" event.
+     * 
+     * ÖNEMLİ: Bu metod artık hiçbir şey yapmıyor!
+     * Restore işlemi MemberController::restore() metodunda direkt SQL ile yapılıyor.
+     * Bu sayede hiçbir event tetiklenmez ve duplicate ödeme oluşmaz.
      */
     public function restored(Member $member): void
     {
-        // Üye geri getirildiğinde aidatları ve ödemeleri de geri getir
-        if ($member->status === 'active') {
-            // Önce mevcut aidatları ve ödemeleri geri getir
-            Due::where('member_id', $member->id)->restore();
-            Payment::where('member_id', $member->id)->restore();
-
-            // Eğer aidat yoksa yeni oluştur
-            $existingDues = Due::where('member_id', $member->id)->count();
-            if ($existingDues == 0) {
-                $this->generateDuesForNewMember($member);
-            }
-        }
+        // BOŞ: Restore işlemi MemberController::restore() metodunda direkt SQL ile yapılıyor
+        // Bu metod artık hiçbir şey yapmıyor, sadece observer'ın tetiklenmesini engellemek için boş bırakıldı
+        return;
     }
 
     /**
@@ -73,8 +70,10 @@ class MemberObserver
      */
     public function forceDeleted(Member $member): void
     {
-        // Üye kalıcı silindiğinde tüm aidatlarını sil
+        // Üye kalıcı silindiğinde tüm aidatlarını ve ödemelerini kalıcı sil
+        // Pivot tablo ilişkileri Payment modelinde force delete'te otomatik silinecek
         Due::where('member_id', $member->id)->forceDelete();
+        Payment::where('member_id', $member->id)->forceDelete();
     }
 
         /**
@@ -86,6 +85,8 @@ private function generateDuesForNewMember(Member $member): void
         $memberAmount = $member->monthly_dues ?? 50.00; // Varsayılan miktar
 
         // 10 yıl boyunca her ay için aidat oluştur
+        // ÖNEMLİ: Event'leri devre dışı bırakarak aidat oluştur
+        // Bu sayede aidat oluşturma sırasında ödeme oluşturulmaz
         for ($year = $startDate->year; $year < $startDate->year + 10; $year++) {
             for ($month = 1; $month <= 12; $month++) {
                 // Geçmiş aylar için aidat oluşturma
@@ -93,8 +94,9 @@ private function generateDuesForNewMember(Member $member): void
                     continue;
                 }
 
-                // Bu ay için aidat zaten var mı kontrol et
-                $existingDue = Due::where('member_id', $member->id)
+                // Bu ay için aidat zaten var mı kontrol et (soft-deleted dahil)
+                $existingDue = DB::table('dues')
+                    ->where('member_id', $member->id)
                     ->where('year', $year)
                     ->where('month', $month)
                     ->first();
@@ -103,14 +105,17 @@ private function generateDuesForNewMember(Member $member): void
                     // Aidat son ödeme tarihi: ayın son günü
                     $dueDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
 
-                    Due::create([
+                    // Direkt SQL ile aidat oluştur (event'ler tetiklenmez)
+                    DB::table('dues')->insert([
                         'member_id' => $member->id,
                         'year' => $year,
                         'month' => $month,
                         'amount' => $memberAmount,
-                        'due_date' => $dueDate,
+                        'due_date' => $dueDate->format('Y-m-d'),
                         'status' => 'pending',
                         'notes' => "Otomatik oluşturulan " . $dueDate->format('F Y') . " aidatı",
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }

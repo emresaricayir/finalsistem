@@ -83,7 +83,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-500">Kaydeden:</span>
-                            <span class="text-sm text-gray-900">{{ $payment->recordedBy->name }}</span>
+                            <span class="text-sm text-gray-900">{{ $payment->recordedBy ? $payment->recordedBy->name : 'Silinmiş Kullanıcı' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-500">Kayıt Tarihi:</span>

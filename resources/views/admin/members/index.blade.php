@@ -41,7 +41,73 @@
         </div>
     </div>
 
+    <!-- Deletion Requests Section -->
+    @if(isset($pendingDeletionRequests) && $pendingDeletionRequests->count() > 0)
+    <div class="bg-white rounded-2xl shadow-sm border border-red-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200 px-6 py-4">
+            <div class="flex items-center">
+                <div class="bg-red-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Bekleyen Silme Talepleri</h2>
+                    <p class="text-gray-600 text-sm">DSGVO gereği üye silme talepleri</p>
+                </div>
+            </div>
+        </div>
 
+        <div class="p-6">
+            <div class="space-y-4">
+                @foreach($pendingDeletionRequests as $request)
+                <div class="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-red-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-user-times text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ $request->member->full_name }}</h3>
+                                    <p class="text-sm text-gray-600">Üye No: {{ $request->member->member_no }} | Email: {{ $request->member->email }}</p>
+                                </div>
+                            </div>
+                            @if($request->reason)
+                            <div class="mt-3 bg-white rounded-lg p-3 border border-red-200">
+                                <p class="text-sm text-gray-700"><strong>Sebep:</strong> {{ $request->reason }}</p>
+                            </div>
+                            @endif
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-clock mr-1"></i>
+                                Talep Tarihi: {{ $request->created_at->format('d.m.Y H:i') }}
+                            </p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <form action="{{ route('admin.members.deletion-requests.approve', $request->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" 
+                                        onclick="return confirm('Bu üyeyi silmek istediğinizden emin misiniz? Üye silinen üyeler listesine taşınacaktır.')"
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center shadow-md hover:shadow-lg">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Onayla ve Sil
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.members.deletion-requests.reject', $request->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" 
+                                        onclick="return confirm('Bu silme talebini reddetmek istediğinizden emin misiniz?')"
+                                        class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center shadow-md hover:shadow-lg">
+                                    <i class="fas fa-times mr-2"></i>
+                                    Reddet
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Members Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

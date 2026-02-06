@@ -65,7 +65,29 @@ class MemberApplicationController extends Controller
             }
 
             // If email exists in soft deleted records, restore the member
-            $existingDeletedMember->restore();
+            // TAMAMEN BYPASS: Observer'ı geçici olarak devre dışı bırak
+            Member::withoutEvents(function() use ($existingDeletedMember) {
+                \DB::transaction(function() use ($existingDeletedMember) {
+                    // 1. Üyeyi restore et
+                    \DB::table('members')
+                        ->where('id', $existingDeletedMember->id)
+                        ->update(['deleted_at' => null]);
+                    
+                    // 2. Aidatları restore et (sadece silinmiş olanları)
+                    \DB::table('dues')
+                        ->where('member_id', $existingDeletedMember->id)
+                        ->whereNotNull('deleted_at')
+                        ->update(['deleted_at' => null]);
+                    
+                    // 3. Ödemeleri restore et (sadece silinmiş olanları)
+                    \DB::table('payments')
+                        ->where('member_id', $existingDeletedMember->id)
+                        ->whereNotNull('deleted_at')
+                        ->update(['deleted_at' => null]);
+                });
+            });
+            
+            $existingDeletedMember->refresh();
             $existingDeletedMember->update([
                 'name' => $request->name,
                 'surname' => $request->surname,
@@ -92,6 +114,8 @@ class MemberApplicationController extends Controller
                 'signature' => $request->signature,
                 'signature_date' => now(),
                 'sepa_agreement' => $request->has('sepa_agreement'),
+                'privacy_consent' => true,
+                'privacy_consent_date' => now(),
                 'application_date' => now(),
             ]);
 
@@ -136,6 +160,7 @@ class MemberApplicationController extends Controller
             'bic' => 'nullable|string|max:255',
             'sepa_agreement' => 'nullable|boolean',
             'payment_due_date' => 'nullable|date',
+            'privacy_consent' => 'required|accepted',
             'signature' => 'required|string',
             'signature_confirmation' => 'required|accepted',
         ], [
@@ -228,6 +253,8 @@ class MemberApplicationController extends Controller
                     'signature' => $validated['signature'],
                     'signature_date' => now(),
                     'sepa_agreement' => $request->has('sepa_agreement'),
+                    'privacy_consent' => true,
+                    'privacy_consent_date' => now(),
                     'application_date' => now(),
                 ]);
 

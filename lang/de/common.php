@@ -230,6 +230,17 @@ return [
     'bank_details_required' => 'Für Lastschrift sind alle Bankdaten erforderlich.',
     'signature_confirmation_required' => 'Bitte bestätigen Sie die Unterschriftserklärung.',
     
+    // Privacy Consent (DSGVO)
+    'privacy_consent_title' => 'Einwilligung zur Datenverarbeitung',
+    'privacy_consent_desc' => 'Gemäß DSGVO benötigen wir Ihre Einwilligung zur Verarbeitung Ihrer personenbezogenen Daten.',
+    'privacy_consent_required' => 'Die Datenschutzerklärung muss bestätigt werden.',
+    
+    // Data Export (DSGVO - Right to data portability)
+    'data_export_title' => 'Meine Daten Herunterladen',
+    'data_export_desc' => 'Gemäß DSGVO Artikel 20 können Sie Ihre personenbezogenen Daten im JSON- oder PDF-Format herunterladen.',
+    'download_json' => 'JSON Herunterladen',
+    'download_pdf' => 'PDF Herunterladen',
+    
     // Email Subjects
     'email_new_member_subject' => 'Neue Mitgliedsanmeldung',
     'email_member_approval_subject' => 'Ihre Mitgliedschaft wurde genehmigt',
@@ -375,4 +386,37 @@ return [
     'no_videos_found' => 'Noch keine Videos vorhanden',
     'no_videos_found_desc' => 'In dieser Kategorie wurden noch keine Videos hinzugefügt.',
     'watch' => 'Ansehen',
+    
+    // Data Deletion (DSGVO - Right to erasure)
+    'data_deletion_title' => 'Meine Daten Löschen',
+    'data_deletion_desc' => 'Gemäß DSGVO Artikel 17 können Sie die Löschung Ihrer personenbezogenen Daten beantragen.',
+    'data_deletion_warning' => 'Wichtige Warnung',
+    'data_deletion_warning_desc' => 'Diese Aktion kann nicht rückgängig gemacht werden. Ihr Löschantrag wird vom Vorstand geprüft und nach Genehmigung werden Ihre Daten gelöscht.',
+    'deletion_reason' => 'Löschgrund',
+    'deletion_reason_placeholder' => 'Warum möchten Sie, dass Ihre Daten gelöscht werden? (Optional)',
+    'deletion_confirm' => 'Ich verstehe, dass ich die Löschung meiner Daten beantrage und dass diese Aktion nicht rückgängig gemacht werden kann.',
+    'submit_deletion_request' => 'Löschantrag Einreichen',
+    'deletion_request_pending' => 'Ausstehender Löschantrag',
+    'deletion_request_pending_desc' => 'Ihr Löschantrag wird vom Vorstand geprüft. Nach Genehmigung werden Ihre Daten gelöscht.',
+    'optional' => 'Optional',
+    
+    // Legal Pages (DSGVO)
+    'privacy_policy' => 'Datenschutzerklärung',
+    'impressum' => 'Impressum',
+    'cookie_policy' => 'Cookie-Richtlinie',
+    
+    // Cookie Consent (DSGVO)
+    'cookie_consent_title' => 'Cookie-Verwendung',
+    'cookie_consent_desc' => 'Diese Website verwendet Cookies, um Ihnen die beste Erfahrung zu bieten. Durch die weitere Nutzung unserer Website stimmen Sie der Verwendung von Cookies zu.',
+    'accept_cookies' => 'Akzeptieren',
+    'decline_cookies' => 'Ablehnen',
+    'learn_more' => 'Mehr erfahren',
+    
+    // Consent Withdrawal (DSGVO - Right to withdraw consent)
+    'consent_withdrawal_title' => 'Einwilligung Widerrufen',
+    'consent_withdrawal_desc' => 'Gemäß DSGVO Artikel 7 Abs. 3 können Sie Ihre Einwilligung zur Datenschutzerklärung jederzeit widerrufen.',
+    'consent_withdrawal_info_title' => 'Information',
+    'consent_withdrawal_info_desc' => 'Wenn Sie Ihre Einwilligung widerrufen, können Ihre Daten gelöscht werden, es sei denn, es besteht eine andere Rechtsgrundlage für die Verarbeitung. Aufgrund der Mitgliedschaftsvereinbarung und gesetzlicher Verpflichtungen können jedoch einige Ihrer Daten weiterhin gespeichert werden.',
+    'consent_withdrawal_confirm' => 'Ich bestätige, dass ich meine Einwilligung zur Datenschutzerklärung widerrufen möchte und die Konsequenzen verstehe.',
+    'withdraw_consent' => 'Einwilligung Widerrufen',
 ];

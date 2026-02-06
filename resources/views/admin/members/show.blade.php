@@ -175,7 +175,7 @@
 
                     <div class="space-y-4">
                         <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Toplam Borç:</span>
+                            <span class="text-sm text-gray-600">Toplam Aidat:</span>
                             <span class="text-sm font-medium text-red-600">{{ number_format($member->total_dues, 2) }} €</span>
                         </div>
 
@@ -436,7 +436,7 @@
                                         {{ $payment->receipt_no ?: '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $payment->recordedBy->name }}
+                                        {{ $payment->recordedBy ? $payment->recordedBy->name : 'Silinmiş Kullanıcı' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center space-x-2">

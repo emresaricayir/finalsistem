@@ -49,6 +49,8 @@ class Member extends Model
         'signature',
         'signature_date',
         'sepa_agreement',
+        'privacy_consent',
+        'privacy_consent_date',
         'deletion_reason',
         'deleted_by',
         'activation_token',
@@ -70,6 +72,8 @@ class Member extends Model
         'approved_at' => 'datetime',
         'signature_date' => 'datetime',
         'sepa_agreement' => 'boolean',
+        'privacy_consent' => 'boolean',
+        'privacy_consent_date' => 'datetime',
     ];
 
     public function dues(): HasMany
@@ -79,7 +83,12 @@ class Member extends Model
 
     public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Payment::class)->withoutTrashed();
+    }
+
+    public function deletionRequest(): HasMany
+    {
+        return $this->hasMany(DeletionRequest::class);
     }
 
     public function getFullNameAttribute(): string

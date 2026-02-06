@@ -509,7 +509,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ $payment->recordedBy->name }}
+                                    {{ $payment->recordedBy ? $payment->recordedBy->name : 'Silinmiş Kullanıcı' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -581,7 +581,7 @@
 
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500">
-                            Kaydeden: {{ $payment->recordedBy->name }}
+                            Kaydeden: {{ $payment->recordedBy ? $payment->recordedBy->name : 'Silinmiş Kullanıcı' }}
                         </div>
                         <div class="flex space-x-2">
                             <a href="{{ route('admin.payments.show', $payment) }}" class="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-100 transition-colors duration-200" title="Görüntüle">

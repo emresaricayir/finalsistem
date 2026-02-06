@@ -287,7 +287,7 @@
                         @if(auth()->user()->hasAnyRole(['super_admin', 'accountant']))
                         <div class="menu-item">
                             <button onclick="toggleDropdown('membership')"
-                                    class="sidebar-btn w-full flex items-center justify-between px-4 py-3 text-slate-200 rounded-lg transition-all duration-300 hover:bg-white/5 {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') ? 'bg-white/10 border-l-4 border-cyan-400' : 'hover:border-l-4 hover:border-white/30' }}">
+                                    class="sidebar-btn w-full flex items-center justify-between px-4 py-3 text-slate-200 rounded-lg transition-all duration-300 hover:bg-white/5 {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') || request()->routeIs('admin.access-logs.*') ? 'bg-white/10 border-l-4 border-cyan-400' : 'hover:border-l-4 hover:border-white/30' }}">
                                 <div class="flex items-center">
                                     <div class="w-6 h-6 flex items-center justify-center mr-3">
                                         <i class="fas fa-users w-4 h-4"></i>
@@ -296,7 +296,7 @@
                                 </div>
                                 <i class="fas fa-chevron-down dropdown-arrow transition-transform duration-300 text-xs" id="membership-arrow"></i>
                             </button>
-                            <div class="dropdown-content {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') ? 'open' : '' }}" id="membership-menu">
+                            <div class="dropdown-content {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') || request()->routeIs('admin.access-logs.*') ? 'open' : '' }}" id="membership-menu">
                                 <div class="ml-4 mt-2 space-y-1">
                                     <a href="{{ route('admin.members.index') }}"
                                        class="flex items-center px-4 py-2 text-white text-opacity-80 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.members.index') ? 'bg-white bg-opacity-15 text-white' : 'hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
@@ -328,6 +328,13 @@
                                         <i class="fas fa-vote-yea w-4 h-4 mr-3"></i>
                                         <span class="text-sm">Seçim</span>
                                     </a>
+                                    @if(auth()->user()->isSuperAdmin())
+                                    <a href="{{ route('admin.access-logs.index') }}"
+                                       class="flex items-center px-4 py-2 text-white text-opacity-80 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.access-logs.*') ? 'bg-white bg-opacity-15 text-white' : 'hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                        <i class="fas fa-clipboard-list w-4 h-4 mr-3"></i>
+                                        <span class="text-sm">Veri Erişim Logları</span>
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -682,14 +689,14 @@
                         @if(auth()->user()->hasAnyRole(['super_admin', 'accountant']))
                         <div class="menu-item">
                             <button onclick="toggleMobileDropdown('mobile-membership')"
-                                    class="w-full flex items-center justify-between px-4 py-3 text-white font-bold rounded-xl transition-all duration-200 hover:bg-white hover:bg-opacity-10 {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') ? 'bg-white bg-opacity-20' : '' }}">
+                                    class="w-full flex items-center justify-between px-4 py-3 text-white font-bold rounded-xl transition-all duration-200 hover:bg-white hover:bg-opacity-10 {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') || request()->routeIs('admin.access-logs.*') ? 'bg-white bg-opacity-20' : '' }}">
                                 <div class="flex items-center">
                                     <i class="fas fa-users w-5 h-5 mr-3"></i>
                                     <span>Üyelik Yönetimi</span>
                                 </div>
                                 <i class="fas fa-chevron-down dropdown-arrow text-sm" id="mobile-membership-arrow"></i>
                             </button>
-                            <div class="dropdown-content {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') ? 'open' : '' }}" id="mobile-membership-menu">
+                            <div class="dropdown-content {{ request()->routeIs('admin.members.*') || request()->routeIs('admin.dues.*') || request()->routeIs('admin.payments.*') || request()->routeIs('admin.monthly-payments') || request()->routeIs('admin.elections.*') || request()->routeIs('admin.access-logs.*') ? 'open' : '' }}" id="mobile-membership-menu">
                                 <div class="ml-4 mt-2 space-y-1">
                         <a href="{{ route('admin.members.index') }}"
                                        class="flex items-center px-4 py-2 text-white text-opacity-80 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.members.index') ? 'bg-white bg-opacity-15 text-white' : 'hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
@@ -721,6 +728,13 @@
                                         <i class="fas fa-vote-yea w-4 h-4 mr-3"></i>
                                         <span class="text-sm">Seçim</span>
                                     </a>
+                                    @if(auth()->user()->isSuperAdmin())
+                                    <a href="{{ route('admin.access-logs.index') }}"
+                                       class="flex items-center px-4 py-2 text-white text-opacity-80 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.access-logs.*') ? 'bg-white bg-opacity-15 text-white' : 'hover:bg-white hover:bg-opacity-10 hover:text-white' }}">
+                                        <i class="fas fa-clipboard-list w-4 h-4 mr-3"></i>
+                                        <span class="text-sm">Veri Erişim Logları</span>
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
