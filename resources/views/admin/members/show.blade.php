@@ -124,6 +124,27 @@
                         </div>
 
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Şifre Durumu</label>
+                            <div class="mt-1">
+                                @if(is_null($member->password))
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Şifre Yok
+                                    </span>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Şifre oluşturmak için üye düzenleme sayfasını kullanın.
+                                    </p>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Şifre Mevcut
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Ödeme Yöntemi</label>
                             <div class="mt-1">
                                 @if($member->payment_method)
@@ -141,6 +162,26 @@
                                     </span>
                                 @else
                                     <span class="text-gray-400 text-sm">Belirtilmemiş</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gizlilik Politikası Rızası</label>
+                            <div class="mt-1">
+                                @if($member->privacy_consent)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Verildi
+                                        @if($member->privacy_consent_date)
+                                            <span class="ml-1">({{ $member->privacy_consent_date->format('d.m.Y H:i') }})</span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                        Verilmedi / Geri Çekildi
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -733,8 +774,24 @@
     // Initialize tabs on page load
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Page loaded, initializing tabs...'); // Debug log
-        // Ensure dues tab is active by default
-        switchTab('dues');
+        
+        // Check URL hash first (e.g., #payments)
+        const hash = window.location.hash.replace('#', '');
+        if (hash && (hash === 'payments' || hash === 'dues')) {
+            console.log('Switching to tab from URL hash:', hash);
+            switchTab(hash);
+            return;
+        }
+        
+        // Check if there's an active tab from session (e.g., after payment deletion)
+        @if(session('active_tab'))
+            console.log('Switching to tab from session:', '{{ session('active_tab') }}');
+            switchTab('{{ session('active_tab') }}');
+        @else
+            // Ensure dues tab is active by default
+            console.log('Switching to default tab: dues');
+            switchTab('dues');
+        @endif
     });
     </script>
 
@@ -820,13 +877,6 @@
             console.error('Tab not found for:', tabName); // Debug log
         }
     }
-
-    // Initialize tabs on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Page loaded, initializing tabs...'); // Debug log
-        // Ensure dues tab is active by default
-        switchTab('dues');
-    });
 
     // Toplu Makbuz Modal
     function showBulkReceiptModal() {
@@ -979,6 +1029,8 @@
                 <form id="deletePaymentForm" method="POST">
                     @csrf
                     @method('DELETE')
+                    <input type="hidden" name="member_id" value="{{ $member->id }}">
+                    <input type="hidden" name="redirect_to" value="member_detail_payments">
 
                     <div class="flex justify-end space-x-3">
                         <button type="button" onclick="closeDeletePaymentModal()"

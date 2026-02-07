@@ -8,6 +8,7 @@ use App\Models\Due;
 use App\Models\Settings;
 use App\Models\User;
 use App\Models\DeletionRequest;
+use App\Models\PrivacyConsentWithdrawal;
 use App\Imports\MembersImport;
 use App\Mail\MemberApprovalMail;
 use App\Mail\AdminNewMemberNotificationMail;
@@ -172,7 +173,13 @@ class MemberController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.members.index', compact('members', 'allMembers', 'totalMembers', 'activeMembers', 'inactiveMembers', 'suspendedMembers', 'pendingDeletionRequests'));
+        // Get recent privacy consent withdrawals (not notified yet)
+        $recentPrivacyWithdrawals = PrivacyConsentWithdrawal::with('member')
+            ->where('notified', false)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.members.index', compact('members', 'allMembers', 'totalMembers', 'activeMembers', 'inactiveMembers', 'suspendedMembers', 'pendingDeletionRequests', 'recentPrivacyWithdrawals'));
     }
 
     /**
@@ -336,6 +343,45 @@ class MemberController extends Controller
     }
 
     /**
+     * Generate password for member (admin panel)
+     */
+    public function createPasswordForMember(Request $request, string $id)
+    {
+        $member = Member::findOrFail($id);
+
+        // Şifre zaten varsa hata döndür
+        if (!is_null($member->password)) {
+            return redirect()->route('admin.members.show', $member)
+                ->with('error', 'Bu üyenin zaten bir şifresi var.');
+        }
+
+        // Activation token oluştur
+        $member->update([
+            'activation_token' => Str::random(60)
+        ]);
+
+        // Eğer geçici email değilse, şifre belirleme email'i gönder
+        if (!str_contains($member->email, '@uye.com')) {
+            try {
+                $this->sendWelcomeEmail($member);
+                return redirect()->route('admin.members.show', $member)
+                    ->with('success', 'Şifre belirleme linki üyenin email adresine gönderildi.');
+            } catch (\Exception $e) {
+                \Log::error('Welcome email gönderilemedi (şifre oluşturma): ' . $e->getMessage(), [
+                    'member_id' => $member->id,
+                    'email' => $member->email
+                ]);
+                return redirect()->route('admin.members.show', $member)
+                    ->with('warning', 'Activation token oluşturuldu ancak email gönderilemedi. Token: ' . $member->activation_token);
+            }
+        } else {
+            // Geçici email'li üye için sadece token oluşturuldu bilgisi ver
+            return redirect()->route('admin.members.show', $member)
+                ->with('success', 'Activation token oluşturuldu. Üye gerçek email\'ini güncellediğinde şifre belirleme linki gönderilecek.');
+        }
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
@@ -377,11 +423,27 @@ class MemberController extends Controller
             'membership_date' => 'required|date',
             'monthly_dues' => 'required|numeric|min:' . \App\Models\Settings::getMinimumMonthlyDues(),
             'payment_method' => 'nullable|in:cash,bank_transfer,lastschrift_monthly,lastschrift_semi_annual,lastschrift_annual',
+            'password' => 'nullable|string|min:6',
             'notes' => 'nullable|string',
             'signature' => 'nullable|string',
             'sepa_agreement' => 'nullable|boolean',
+        ], [
+            'member_no.unique' => 'Bu üye numarası zaten kullanılıyor.',
+            'email.unique' => 'Bu e-posta adresi zaten kullanılıyor.',
         ]);
 
+        // Üye numarası değişikliği kontrolü (sadece super admin)
+        $memberNoChanged = false;
+        if ($request->filled('member_no') && $member->member_no !== $request->member_no) {
+            // Super admin kontrolü
+            if (!auth()->user()->hasRole('super_admin')) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Üye numarasını sadece super admin değiştirebilir.');
+            }
+            $memberNoChanged = true;
+        }
+        
         // Eğer üye numarası boş bırakılmışsa otomatik oluştur
         if (empty($validated['member_no'])) {
             $lastMember = Member::orderBy('id', 'desc')->first();
@@ -394,11 +456,36 @@ class MemberController extends Controller
             $validated['signature_date'] = now();
         }
 
+        // Şifre güncelleme: Eğer şifre girildiyse hash'le ve kaydet
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            // Şifre boş bırakıldıysa, mevcut şifreyi koru (validated'dan çıkar)
+            unset($validated['password']);
+        }
+
         // Üyelik tarihi, aylık aidat, ödeme yöntemi veya durum değişti mi kontrol et
         $membershipDateChanged = $member->membership_date != $validated['membership_date'];
         $monthlyDuesChanged = $member->monthly_dues != $validated['monthly_dues'];
         $paymentMethodChanged = $member->payment_method != $validated['payment_method'];
         $statusChanged = $member->status != $validated['status'];
+
+        // Üye numarası değişikliği için özel log (güncellemeden önce)
+        if ($memberNoChanged) {
+            \App\Models\AccessLog::create([
+                'member_id' => $member->id,
+                'user_id' => auth()->id(),
+                'action' => 'member_no_changed',
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'details' => [
+                    'old_member_no' => $member->member_no,
+                    'new_member_no' => $validated['member_no'],
+                    'changed_by' => auth()->user()->name,
+                    'changed_at' => now()->toDateTimeString(),
+                ],
+            ]);
+        }
 
         $member->update($validated);
 
@@ -1269,13 +1356,13 @@ class MemberController extends Controller
      */
     public function downloadTemplate()
     {
-        // Sample data for template with Turkish characters - including payment method
+        // Sample data for template with Turkish characters - including payment method, gender, and password
         $sampleData = [
-            ['ad', 'soyad', 'email', 'telefon', 'dogum_tarihi', 'dogum_yeri', 'uyruk', 'meslek', 'adres', 'uyelik_tarihi', 'aylik_aidat', 'odeme_yontemi', 'durum', 'notlar'],
-            ['Ahmet', 'Yılmaz', 'ahmet@example.com', '+49 123 456 789', '1990-01-15', 'İstanbul', 'Türkiye', 'Mühendis', 'Test Adres 1', '2025-01-01', '25.00', 'nakit', 'active', 'Örnek üye 1'],
-            ['Fatma', 'Özdemir', 'fatma@example.com', '+49 987 654 321', '1985-05-20', 'Ankara', 'Türkiye', 'Öğretmen', 'Test Adres 2', '2025-01-01', '20.00', 'banka', 'active', 'Örnek üye 2'],
-            ['Mehmet', 'Güler', '', '+49 555 123 456', '1992-08-10', 'İzmir', 'Türkiye', 'Doktor', 'Test Adres 3', '2025-01-01', '30.00', 'lastschrift', 'active', 'Örnek üye 3'],
-            ['Ayşe', 'Kaya', 'ayse@example.com', '+49 444 789 012', '1988-12-05', 'Bursa', 'Türkiye', 'Avukat', 'Test Adres 4', '2025-01-01', '15.00', '', 'active', 'Örnek üye 4 - Boş ödeme yöntemi'],
+            ['ad', 'soyad', 'cinsiyet', 'email', 'telefon', 'dogum_tarihi', 'dogum_yeri', 'uyruk', 'meslek', 'adres', 'uyelik_tarihi', 'aylik_aidat', 'odeme_yontemi', 'sifre', 'durum', 'notlar'],
+            ['Ahmet', 'Yılmaz', 'Erkek', 'ahmet@example.com', '+49 123 456 789', '1990-01-15', 'İstanbul', 'Türkiye', 'Mühendis', 'Test Adres 1', '2025-01-01', '25.00', 'nakit', 'sifre123', 'active', 'Örnek üye 1 - Şifre belirtilmiş'],
+            ['Fatma', 'Özdemir', 'Kadın', 'fatma@example.com', '+49 987 654 321', '1985-05-20', 'Ankara', 'Türkiye', 'Öğretmen', 'Test Adres 2', '2025-01-01', '20.00', 'banka', '', 'active', 'Örnek üye 2 - Şifre boş (admin panelinden oluşturulacak)'],
+            ['Mehmet', 'Güler', 'Männlich', '', '+49 555 123 456', '1992-08-10', 'İzmir', 'Türkiye', 'Doktor', 'Test Adres 3', '2025-01-01', '30.00', 'lastschrift', '', 'active', 'Örnek üye 3 - Geçici email, şifre boş'],
+            ['Ayşe', 'Kaya', 'Weiblich', 'ayse@example.com', '+49 444 789 012', '1988-12-05', 'Bursa', 'Türkiye', 'Avukat', 'Test Adres 4', '2025-01-01', '15.00', '', 'sifre456', 'active', 'Örnek üye 4 - Şifre belirtilmiş'],
         ];
 
         // Create Excel file using PhpSpreadsheet
@@ -1288,24 +1375,24 @@ class MemberController extends Controller
         // Start with clean template from row 1
         $sheet->fromArray($sampleData, null, 'A1');
 
-        // Auto-size columns
-        foreach (range('A', 'N') as $column) {
+        // Auto-size columns (now 16 columns: A-P)
+        foreach (range('A', 'P') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
         // Style the header row (row 1)
-        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:N1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $sheet->getStyle('A1:N1')->getFill()->getStartColor()->setRGB('4F46E5'); // Indigo color
-        $sheet->getStyle('A1:N1')->getFont()->getColor()->setRGB('FFFFFF'); // White text
+        $sheet->getStyle('A1:P1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:P1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $sheet->getStyle('A1:P1')->getFill()->getStartColor()->setRGB('4F46E5'); // Indigo color
+        $sheet->getStyle('A1:P1')->getFont()->getColor()->setRGB('FFFFFF'); // White text
 
         // Style the data rows
         $dataEndRow = count($sampleData);
-        $sheet->getStyle('A2:N' . $dataEndRow)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $sheet->getStyle('A2:N' . $dataEndRow)->getFill()->getStartColor()->setRGB('F8FAFC'); // Light gray
+        $sheet->getStyle('A2:P' . $dataEndRow)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $sheet->getStyle('A2:P' . $dataEndRow)->getFill()->getStartColor()->setRGB('F8FAFC'); // Light gray
 
         // Add borders
-        $sheet->getStyle('A1:N' . $dataEndRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle('A1:P' . $dataEndRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         // Create Excel writer
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
@@ -2178,6 +2265,24 @@ class MemberController extends Controller
 
         return redirect()->route('admin.members.index')
             ->with('success', 'Silme talebi onaylandı ve üye silindi.');
+    }
+
+    /**
+     * Mark privacy consent withdrawal as notified
+     */
+    public function markPrivacyWithdrawalNotified(Request $request, $id)
+    {
+        if (!auth()->user()->hasAnyRole(['super_admin', 'admin'])) {
+            abort(403, 'Bu işlemi yapma yetkiniz yok.');
+        }
+
+        $withdrawal = PrivacyConsentWithdrawal::findOrFail($id);
+        $withdrawal->update([
+            'notified' => true,
+        ]);
+
+        return redirect()->route('admin.members.index')
+            ->with('success', 'Rıza geri çekme bildirimi okundu olarak işaretlendi.');
     }
 
     /**

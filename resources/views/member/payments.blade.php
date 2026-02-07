@@ -1,6 +1,6 @@
 @extends('layouts.member-payments')
 
-@section('title', 'Ödemelerim')
+@section('title', __('common.member_payments'))
 
 @section('content')
         @if(session('success'))
@@ -24,13 +24,11 @@
                         <i class="fas fa-check-circle text-white text-2xl"></i>
                     </div>
                     <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">
-                        Ödenen Aidatlar
-                        <span class="text-xs ml-1">(Bezahlte Beiträge)</span>
+                        {{ __('common.paid_dues') }}
                     </p>
                     <p class="text-4xl font-bold text-gray-900 mb-2">{{ $allPayments->count() }}</p>
                     <p class="text-lg text-green-600 font-medium">
-                        {{ number_format($allPayments->sum('amount'), 2) }} € toplam
-                        <span class="text-sm ml-1">(Gesamt)</span>
+                        {{ number_format($allPayments->sum('amount'), 2) }} € {{ __('common.total') }}
                     </p>
                 </div>
             </div>
@@ -41,17 +39,14 @@
                         <i class="fas fa-calendar text-white text-2xl"></i>
                     </div>
                     <p class="text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">
-                        Aylık Aidat
-                        <span class="text-xs ml-1">(Monatlicher Beitrag)</span>
+                        {{ __('common.monthly_dues_amount') }}
                     </p>
                     <p class="text-4xl font-bold text-gray-900 mb-2">{{ number_format($member->monthly_dues, 2) }} €</p>
                     <p class="text-lg text-blue-600 font-medium">
                         @if($member->payment_method === 'cash')
-                            Nakit ödeme
-                            <span class="text-sm ml-1">(Barzahlung)</span>
+                            {{ __('common.cash_payment') }}
                         @else
-                            {{ ucfirst($member->payment_method) }} ile ödeme
-                            <span class="text-sm ml-1">(mit {{ ucfirst($member->payment_method) }} bezahlen)</span>
+                            {{ __('common.payment_with') }} {{ ucfirst($member->payment_method) }}
                         @endif
                     </p>
                 </div>
@@ -66,8 +61,7 @@
                         <i class="fas fa-history text-white text-2xl"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900">
-                        Ödeme Geçmişi
-                        <span class="text-sm text-gray-600 ml-2">(Zahlungsverlauf)</span>
+                        {{ __('common.payment_history') }}
                     </h2>
                 </div>
             </div>
@@ -79,20 +73,16 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="w-28 px-4 sm:px-8 py-4 sm:py-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Tarih
-                                    <span class="text-xs ml-1">(Datum)</span>
+                                    {{ __('common.date') }}
                                 </th>
                                 <th class="w-48 px-4 sm:px-8 py-4 sm:py-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Dönem
-                                    <span class="text-xs ml-1">(Zeitraum)</span>
+                                    {{ __('common.period') }}
                                 </th>
                                 <th class="w-24 px-4 sm:px-8 py-4 sm:py-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Tutar
-                                    <span class="text-xs ml-1">(Betrag)</span>
+                                    {{ __('common.amount') }}
                                 </th>
                                 <th class="w-28 px-4 sm:px-8 py-4 sm:py-6 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Durum
-                                    <span class="text-xs ml-1">(Status)</span>
+                                    {{ __('common.status') }}
                                 </th>
                             </tr>
                         </thead>
@@ -109,7 +99,7 @@
                                         </div>
                                     @else
                                         <span class="text-gray-400 text-sm bg-gray-100 px-3 py-1 rounded-lg">
-                                            Belirtilmemiş
+                                            {{ __('common.not_specified') }}
                                         </span>
                                     @endif
                                 </td>
@@ -158,7 +148,7 @@
                                         </div>
                                     @else
                                         <span class="text-gray-400 text-xs bg-gray-100 px-3 py-1.5 rounded-full">
-                                            Belirtilmemiş
+                                            {{ __('common.not_specified') }}
                                         </span>
                                     @endif
                                 </td>
@@ -174,7 +164,7 @@
                                     <div class="flex items-center">
                                         <i class="fas fa-check-circle text-green-500 mr-2 text-sm"></i>
                                         <span class="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
-                                            Ödendi
+                                            {{ __('common.paid') }}
                                         </span>
                                     </div>
                                 </td>
@@ -190,12 +180,10 @@
                         <i class="fas fa-receipt text-gray-400 text-3xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">
-                        Henüz Ödeme Yapılmamış
-                        <span class="text-sm text-gray-600 ml-2">(Noch keine Zahlung)</span>
+                        {{ __('common.no_payment_made') }}
                     </h3>
                     <p class="text-gray-600 text-lg">
-                        Henüz herhangi bir ödeme kaydınız bulunmuyor.
-                        <span class="text-sm ml-1">(Sie haben noch keine Zahlungsaufzeichnungen.)</span>
+                        {{ __('common.no_payment_records') }}
                     </p>
                 </div>
             @endif

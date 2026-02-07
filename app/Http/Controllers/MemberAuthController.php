@@ -6,9 +6,12 @@ use App\Models\Member;
 use App\Models\Payment;
 use App\Models\Settings;
 use App\Models\DeletionRequest;
+use App\Models\PrivacyConsentWithdrawal;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -219,6 +222,9 @@ class MemberAuthController extends Controller
         }
 
         $member->update($updateData);
+        
+        // Member'ı yeniden yükle (email güncellemesi sonrası)
+        $member->refresh();
 
         // Update password if provided
         if ($request->filled('new_password')) {
@@ -232,10 +238,31 @@ class MemberAuthController extends Controller
             ]);
         }
 
-        // Success message based on what was updated
-        $message = 'Profil bilgileriniz güncellendi.';
-        if ($isUpdatingFromTemporary) {
-            $message = 'Email adresiniz başarıyla güncellendi. Artık gerçek email adresinizle giriş yapabilirsiniz.';
+        // Eğer geçici email'den gerçek email'e geçildiyse VE şifre yoksa
+        // Activation token oluştur ve şifre belirleme email'i gönder
+        if ($isUpdatingFromTemporary && is_null($member->password)) {
+            // Activation token oluştur
+            $member->update([
+                'activation_token' => Str::random(60)
+            ]);
+
+            // Şifre belirleme email'i gönder
+            try {
+                EmailService::sendMemberWelcome($member);
+                $message = 'Email adresiniz başarıyla güncellendi. Şifre belirleme linki yeni email adresinize gönderildi. Lütfen email kutunuzu kontrol edin.';
+            } catch (\Exception $e) {
+                \Log::error('Welcome email gönderilemedi (geçici email değişimi): ' . $e->getMessage(), [
+                    'member_id' => $member->id,
+                    'email' => $member->email
+                ]);
+                $message = 'Email adresiniz başarıyla güncellendi. Ancak şifre belirleme email\'i gönderilemedi. Lütfen admin ile iletişime geçin.';
+            }
+        } else {
+            // Success message based on what was updated
+            $message = 'Profil bilgileriniz güncellendi.';
+            if ($isUpdatingFromTemporary) {
+                $message = 'Email adresiniz başarıyla güncellendi. Artık gerçek email adresinizle giriş yapabilirsiniz.';
+            }
         }
 
         return back()->with('success', $message);
@@ -556,6 +583,19 @@ class MemberAuthController extends Controller
             'status' => 'pending',
         ]);
 
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => null, // Üye kendi işlemini yapıyor
+            'action' => 'deletion_request',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'reason' => $validated['reason'] ?? null,
+                'requested_by_member' => true,
+            ],
+        ]);
+
         return back()->with('success', 'Silme talebiniz başarıyla gönderildi. Yönetim kurulu tarafından değerlendirilecektir.');
     }
 
@@ -579,11 +619,75 @@ class MemberAuthController extends Controller
             'confirm' => 'required|accepted',
         ]);
 
+        $previousConsentDate = $member->privacy_consent_date;
+
         $member->update([
             'privacy_consent' => false,
             'privacy_consent_date' => null,
         ]);
 
+        // Rıza geri çekme kaydı oluştur (Admin bildirimi için)
+        PrivacyConsentWithdrawal::create([
+            'member_id' => $member->id,
+            'withdrawn_at' => now(),
+            'notes' => 'Üye tarafından rıza geri çekildi',
+            'notified' => false,
+        ]);
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => null, // Üye kendi işlemini yapıyor
+            'action' => 'consent_withdrawal',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'withdrawn_by_member' => true,
+                'previous_consent_date' => $previousConsentDate?->format('Y-m-d'),
+            ],
+        ]);
+
         return back()->with('success', 'Gizlilik politikası rızanız başarıyla geri çekildi.');
+    }
+
+    /**
+     * Give privacy consent again (after withdrawal)
+     */
+    public function givePrivacyConsent(Request $request)
+    {
+        $memberId = session('member_id');
+        if (!$memberId) {
+            return redirect()->route('member.login');
+        }
+
+        $member = Member::findOrFail($memberId);
+
+        if ($member->privacy_consent) {
+            return back()->with('error', 'Zaten gizlilik politikası rızanız bulunuyor.');
+        }
+
+        $validated = $request->validate([
+            'confirm' => 'required|accepted',
+        ]);
+
+        $member->update([
+            'privacy_consent' => true,
+            'privacy_consent_date' => now(),
+        ]);
+
+        // Log access (DSGVO - Veri erişim kaydı)
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id,
+            'user_id' => null, // Üye kendi işlemini yapıyor
+            'action' => 'consent_given',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'given_by_member' => true,
+                'consent_date' => now()->format('Y-m-d'),
+            ],
+        ]);
+
+        return back()->with('success', 'Gizlilik politikası rızanız başarıyla verildi.');
     }
 }

@@ -128,22 +128,37 @@
                     @endif
                     <div>
                         <h1 class="text-2xl font-bold text-white mb-1">{{ $settings['organization_name'] }}</h1>
-                        <p class="text-sm text-teal-100 font-medium">Üye Paneli</p>
+                        <p class="text-sm text-teal-100 font-medium">{{ __('common.member_panel') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-center space-x-6">
                     <div class="hidden md:block text-right">
-                        <p class="text-sm text-teal-100 font-medium">Hoş geldiniz</p>
+                        <p class="text-sm text-teal-100 font-medium">{{ __('common.welcome') }}</p>
                         <p class="font-bold text-white text-lg">{{ $member->name }} {{ $member->surname }}</p>
                     </div>
-                    <form action="{{ route('member.logout') }}" method="POST" class="inline">
+                    <form action="{{ route('member.logout') }}" method="POST" class="inline hidden lg:block">
                         @csrf
-                        <button type="submit" class="bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-6 py-3 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25">
-                            <i class="fas fa-sign-out-alt mr-2"></i>
-                            Çıkış
+                        <button type="submit" class="bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25" title="{{ __('common.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </form>
+                    <!-- Language Switcher - En sağda -->
+                    <div class="flex items-center space-x-0 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm overflow-hidden ml-auto">
+                        <a href="{{ route('language.switch', 'tr') }}" 
+                           class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'tr' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
+                           title="Türkçe">
+                            <img src="{{ asset('storage/templates/tr.png') }}" alt="Türkçe" class="w-4 h-3 object-cover rounded-sm">
+                            <span class="text-xs font-semibold">TR</span>
+                        </a>
+                        <span class="w-px h-4 bg-white/30"></span>
+                        <a href="{{ route('language.switch', 'de') }}" 
+                           class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'de' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
+                           title="Deutsch">
+                            <img src="{{ asset('storage/templates/de.png') }}" alt="Deutsch" class="w-4 h-3 object-cover rounded-sm">
+                            <span class="text-xs font-semibold">DE</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,7 +169,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Mobile Menu Button -->
             <div class="flex justify-between items-center py-4 lg:hidden">
-                <h2 class="text-lg font-bold text-white">Menü</h2>
+                <h2 class="text-lg font-bold text-white">{{ __('common.menu') }}</h2>
                 <button id="mobile-menu-button" class="text-teal-100 hover:text-white focus:outline-none focus:text-white transition-colors duration-300 p-2">
                     <i class="fas fa-bars text-xl hamburger-icon"></i>
                 </button>
@@ -165,33 +180,28 @@
                 <a href="{{ route('member.dashboard') }}"
                    class="bg-teal-500/30 text-white border-b-2 border-teal-400 shadow-lg pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                     <i class="fas fa-home mr-2"></i>
-                    Ana Sayfa
-                    <span class="text-xs ml-1">(Startseite)</span>
+                    {{ __('common.member_dashboard') }}
                 </a>
                 <a href="{{ route('member.profile') }}"
                    class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
                     <i class="fas fa-user mr-2"></i>
-                    Profil
-                    <span class="text-xs ml-1">(Profil)</span>
+                    {{ __('common.member_profile') }}
                 </a>
                 <a href="{{ route('member.payments') }}"
                    class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
                     <i class="fas fa-receipt mr-2"></i>
-                    Ödemelerim
-                    <span class="text-xs ml-1">(Meine Zahlungen)</span>
+                    {{ __('common.member_payments') }}
                 </a>
                 <a href="{{ route('member.contact') }}"
                    class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
                     <i class="fas fa-phone mr-2"></i>
-                    İletişim & Bağış
-                    <span class="text-xs ml-1">(Kontakt & Spende)</span>
+                    {{ __('common.member_contact') }}
                 </a>
                 @if($member->application_status === 'approved')
                 <a href="{{ route('member.application.html') }}"
                     class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
                     <i class="fas fa-file-alt mr-2"></i>
-                    Üyelik Belgesi
-                    <span class="text-xs ml-1">(Mitgliedsausweis)</span>
+                    {{ __('common.member_certificate') }}
                 </a>
                 @endif
             </nav>
@@ -202,36 +212,41 @@
                     <a href="{{ route('member.dashboard') }}"
                        class="bg-teal-500/30 text-white border-l-4 border-teal-400 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-home mr-3 text-base"></i>
-                        Ana Sayfa
-                        <span class="text-xs ml-2">(Startseite)</span>
+                        {{ __('common.member_dashboard') }}
                     </a>
                     <a href="{{ route('member.profile') }}"
                        class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-user mr-3 text-base"></i>
-                        Profil
-                        <span class="text-xs ml-2">(Profil)</span>
+                        {{ __('common.member_profile') }}
                     </a>
                     <a href="{{ route('member.payments') }}"
                        class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-receipt mr-3 text-base"></i>
-                        Ödemelerim
-                        <span class="text-xs ml-2">(Meine Zahlungen)</span>
+                        {{ __('common.member_payments') }}
                     </a>
                     <a href="{{ route('member.contact') }}"
                        class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-phone mr-3 text-base"></i>
-                        İletişim & Bağış
-                        <span class="text-xs ml-2">(Kontakt & Spende)</span>
+                        {{ __('common.member_contact') }}
                     </a>
                     @if($member->application_status === 'approved')
                     <a href="{{ route('member.application.pdf', $member->id) }}?preview=1"
                         target="_blank"
                         class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-file-pdf mr-3 text-base"></i>
-                        Üyelik Belgesi
-                        <span class="text-xs ml-2">(Mitgliedsausweis)</span>
+                        {{ __('common.member_certificate') }}
                     </a>
                     @endif
+                    
+                    <!-- Çıkış Butonu - Mobil Menü En Altında -->
+                    <div class="mt-4 pt-4 border-t border-white/20">
+                        <form action="{{ route('member.logout') }}" method="POST" class="w-full">
+                            @csrf
+                            <button type="submit" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-4 py-3 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25 flex items-center justify-center" title="{{ __('common.logout') }}">
+                                <i class="fas fa-sign-out-alt text-lg"></i>
+                            </button>
+                        </form>
+                    </div>
                 </nav>
             </div>
         </div>

@@ -50,9 +50,26 @@ class MembersImport implements ToModel, WithHeadingRow, WithValidation, WithBatc
         // Ödeme yöntemini parse et (nakit, banka_transfer veya boş)
         $paymentMethod = $this->parsePaymentMethod($row['odeme_yontemi'] ?? null);
 
+        // Cinsiyeti parse et (male, female veya boş)
+        $gender = $this->parseGender($row['cinsiyet'] ?? null);
+
+        // Üyelik tarihini parse et
+        $membershipDate = $this->parseDateOrDefault($row['uyelik_tarihi'] ?? null, \App\Services\DuesValidationService::REFERENCE_DATE);
+
+        // Şifre belirleme mantığı:
+        // 1. Excel'de şifre varsa → o şifre kullanılır
+        // 2. Excel'de şifre yoksa → şifre null kalır (admin panelinden oluşturulacak)
+        $password = null;
+        if (!empty($row['sifre']) || !empty($row['password'])) {
+            // Excel'de şifre belirtilmişse kullan
+            $password = Hash::make($row['sifre'] ?? $row['password']);
+        }
+        // Şifre yoksa null kalır (geçici email'li üyeler için admin panelinden oluşturulacak)
+
         return new Member([
             'name' => $name,
             'surname' => $surname,
+            'gender' => $gender,
             'email' => $email,
             'phone' => !empty($row['telefon']) ? trim($row['telefon']) : null,
             'birth_date' => $this->parseDateOrDefault($row['dogum_tarihi'] ?? null, '1990-01-01'),
@@ -62,13 +79,16 @@ class MembersImport implements ToModel, WithHeadingRow, WithValidation, WithBatc
             'address' => $address ?? 'Bilinmiyor',
             'member_no' => $memberNo,
             // Use provided membership date as-is (supports Excel serials). If empty, default to reference date
-            'membership_date' => $this->parseDateOrDefault($row['uyelik_tarihi'] ?? null, \App\Services\DuesValidationService::REFERENCE_DATE),
+            'membership_date' => $membershipDate,
             'monthly_dues' => isset($row['aylik_aidat']) ? (float) str_replace([','], ['.'], $row['aylik_aidat']) : 5.00,
             'payment_method' => $paymentMethod,
             'status' => $row['durum'] ?? 'active',
             'application_status' => 'approved',
-            'password' => Hash::make($this->generatePasswordFromBirthDate($row['dogum_tarihi'] ?? null)),
+            'password' => $password, // Excel'de varsa kullanılır, yoksa null kalır
             'notes' => $notes,
+            // Excel'den yüklenen üyeler için gizlilik rızası otomatik verilmiş sayılsın (eski üyeler gibi)
+            'privacy_consent' => true,
+            'privacy_consent_date' => $membershipDate,
         ]);
     }
 
@@ -176,6 +196,51 @@ class MembersImport implements ToModel, WithHeadingRow, WithValidation, WithBatc
             default:
                 return 'bank_transfer'; // Default to bank transfer for unknown values
         }
+    }
+
+    /**
+     * Parse gender from Excel input
+     * Supports Turkish and German values
+     */
+    private function parseGender($gender)
+    {
+        if (empty($gender)) {
+            return null; // Gender is nullable
+        }
+
+        // Normalize: trim and handle Turkish/German special characters
+        $gender = trim($gender);
+        $genderLower = mb_strtolower($gender, 'UTF-8');
+
+        // Map various input formats to our enum values
+        // Erkek / Male / Männlich
+        if (in_array($genderLower, [
+            'erkek', 'e', 'm', 'male', 'männlich', 'maennlich', 
+            'm', 'm.', 'männl.', 'maennl.'
+        ])) {
+            return 'male';
+        }
+
+        // Kadın / Female / Weiblich
+        if (in_array($genderLower, [
+            'kadın', 'kadin', 'kız', 'kiz', 'k', 'f', 'female', 
+            'weiblich', 'w', 'w.', 'weibl.'
+        ])) {
+            return 'female';
+        }
+
+        // Case-insensitive check for common variations
+        if (stripos($gender, 'erkek') !== false || stripos($gender, 'männlich') !== false || stripos($gender, 'maennlich') !== false) {
+            return 'male';
+        }
+
+        if (stripos($gender, 'kadın') !== false || stripos($gender, 'kadin') !== false || 
+            stripos($gender, 'kız') !== false || stripos($gender, 'kiz') !== false ||
+            stripos($gender, 'weiblich') !== false) {
+            return 'female';
+        }
+
+        return null; // Return null for unknown values (gender is nullable)
     }
 
     /**

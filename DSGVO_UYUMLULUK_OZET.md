@@ -56,17 +56,26 @@
 
 ---
 
-### 4. Rıza Geri Çekme Hakkı (Right to Withdraw Consent)
+### 4. Rıza Geri Çekme ve Tekrar Verme Hakkı (Right to Withdraw & Give Consent)
 **DSGVO Maddesi: Art. 7 Abs. 3 (Widerruf der Einwilligung)**
 
 - ✅ Üye panelinde "Rıza Geri Çekme" bölümü eklendi
 - ✅ Üye gizlilik rızasını geri çekebiliyor
 - ✅ Rıza geri çekildiğinde `privacy_consent = false` ve `privacy_consent_date = null` oluyor
+- ✅ Üye rızasını geri çektikten sonra tekrar rıza verebiliyor
+- ✅ Admin panelinde rıza durumu takibi (üye listesi ve detay sayfasında gösteriliyor)
+- ✅ Rıza geri çekme bildirim sistemi (admin'e bildirim gösteriliyor)
+- ✅ Rıza geri çekme kayıtları tutuluyor (`privacy_consent_withdrawals` tablosu)
 
 **Dosyalar:**
-- `app/Http/Controllers/MemberAuthController.php` (withdrawPrivacyConsent metodu)
-- `resources/views/member/profile.blade.php`
-- `routes/web.php` (privacy.consent.withdraw route)
+- `database/migrations/2026_02_06_162148_create_privacy_consent_withdrawals_table.php`
+- `app/Models/PrivacyConsentWithdrawal.php`
+- `app/Http/Controllers/MemberAuthController.php` (withdrawPrivacyConsent, givePrivacyConsent metodları)
+- `app/Http/Controllers/Admin/MemberController.php` (markPrivacyWithdrawalNotified metodu)
+- `resources/views/member/profile.blade.php` (rıza geri çekme ve tekrar verme formları)
+- `resources/views/admin/members/index.blade.php` (rıza durumu ve bildirimler)
+- `resources/views/admin/members/show.blade.php` (rıza durumu gösterimi)
+- `routes/web.php` (privacy.consent.withdraw, privacy.consent.give route'ları)
 
 ---
 
@@ -90,13 +99,14 @@
 **DSGVO Maddesi: Art. 13, 14 (Informationspflicht)**
 
 - ✅ Footer'a yasal sayfa linkleri eklendi:
-  - Gizlilik Politikası (Datenschutzerklärung)
-  - Impressum (Yasal Bilgiler)
-  - Çerez Politikası (Cookie Policy)
-- ✅ Sayfa içerikleri hazırlandı (admin panelden oluşturulacak)
+  - Gizlilik Politikası (Datenschutzerklärung) - Slug: `datenschutz`
+  - Impressum (Yasal Bilgiler) - Slug: `impressum`
+  - Çerez Politikası (Cookie Policy) - Slug: `cerez-politikasi`
+- ✅ Tüm yasal sayfalar admin panelden oluşturuldu ve aktif
 
 **Dosyalar:**
 - `resources/views/partials/footer.blade.php`
+- `DSGVO_SAYFA_ICERIKLERI.md` (sayfa içerikleri için referans)
 - `DSGVO_SAYFA_ICERIKLERI.md` (sayfa içerikleri)
 - `lang/tr/common.php` (legal page çevirileri)
 - `lang/de/common.php` (legal page çevirileri)
@@ -200,20 +210,20 @@
 
 ---
 
-## Tamamlanması Gerekenler
+## Tamamlanan Sayfalar ✅
 
-### Admin Panelden Oluşturulacak Sayfalar:
-1. **Gizlilik Politikası (Datenschutzerklärung)**
+### Admin Panelden Oluşturulan Sayfalar:
+1. ✅ **Gizlilik Politikası (Datenschutzerklärung)**
    - Slug: `datenschutz`
-   - İçerik: `DSGVO_SAYFA_ICERIKLERI.md` dosyasında hazır
+   - Durum: Tamamlandı
 
-2. **Impressum (Yasal Bilgiler)**
+2. ✅ **Impressum (Yasal Bilgiler)**
    - Slug: `impressum`
-   - İçerik: `DSGVO_SAYFA_ICERIKLERI.md` dosyasında hazır
+   - Durum: Tamamlandı
 
-3. **Çerez Politikası (Cookie Policy)**
+3. ✅ **Çerez Politikası (Cookie Policy)**
    - Slug: `cerez-politikasi`
-   - İçerik: Admin tarafından oluşturulacak
+   - Durum: Tamamlandı
 
 ---
 
@@ -222,9 +232,10 @@
 - ✅ Tüm DSGVO gereksinimleri karşılanmış durumda
 - ✅ Veri erişim logları tutuluyor (audit trail)
 - ✅ Kullanıcılar kendi verilerine erişebiliyor ve silebiliyor
-- ✅ Rıza yönetimi tam olarak çalışıyor
-- ✅ Yasal sayfalar için içerikler hazır (admin panelden oluşturulacak)
+- ✅ Rıza yönetimi tam olarak çalışıyor (verme ve geri çekme)
+- ✅ Yasal sayfalar oluşturuldu (Gizlilik Politikası, Impressum, Çerez Politikası)
 - ✅ Admin paneline 2FA (İki Faktörlü Doğrulama) eklendi (güvenlik katmanı)
+- ✅ Admin panelinde rıza durumu takibi ve bildirim sistemi mevcut
 
 ---
 
@@ -244,4 +255,4 @@
 
 ---
 
-**Son Güncelleme:** 06.02.2026 (2FA eklendi)
+**Son Güncelleme:** 06.02.2026 (Yasal sayfalar tamamlandı, Rıza geri çekme bildirim sistemi eklendi)

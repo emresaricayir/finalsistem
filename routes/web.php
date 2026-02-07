@@ -148,8 +148,10 @@ Route::middleware(['auth', 'verified', 'admin', 'update.last.login'])->prefix('a
     Route::get('members/deleted', [MemberController::class, 'deleted'])->name('members.deleted');
     Route::post('members/{id}/restore', [MemberController::class, 'restore'])->name('members.restore');
     Route::delete('members/{id}/force-delete', [MemberController::class, 'forceDelete'])->name('members.force-delete');
+    Route::post('members/{id}/generate-password', [MemberController::class, 'createPasswordForMember'])->name('members.generate-password');
     Route::post('members/deletion-requests/{id}/approve', [MemberController::class, 'approveDeletionRequest'])->name('members.deletion-requests.approve');
     Route::post('members/deletion-requests/{id}/reject', [MemberController::class, 'rejectDeletionRequest'])->name('members.deletion-requests.reject');
+    Route::put('members/privacy-withdrawals/{id}/mark-notified', [MemberController::class, 'markPrivacyWithdrawalNotified'])->name('members.privacy-withdrawals.mark-notified');
 
     // Resource routes (must be after specific routes)
     Route::resource('members', MemberController::class);
@@ -400,6 +402,7 @@ Route::middleware('member.auth')->prefix('uye-panel')->name('member.')->group(fu
     Route::get('/verilerimi-indir/{format}', [MemberAuthController::class, 'exportData'])->name('data.export')->where('format', 'json|pdf');
     Route::post('/verilerimi-sil', [MemberAuthController::class, 'requestDeletion'])->name('data.deletion.request');
     Route::put('/gizlilik-riza-geri-cek', [MemberAuthController::class, 'withdrawPrivacyConsent'])->name('privacy.consent.withdraw');
+    Route::put('/gizlilik-riza-ver', [MemberAuthController::class, 'givePrivacyConsent'])->name('privacy.consent.give');
 });
 
 // Public Display Routes

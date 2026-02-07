@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Üyelik Belgesi - {{ $member->name }} {{ $member->surname }}</title>
+    <title>{{ __('common.membership_certificate') }} - {{ $member->name }} {{ $member->surname }}</title>
     <style>
         @page {
             margin: 0;

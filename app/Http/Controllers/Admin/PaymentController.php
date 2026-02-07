@@ -761,11 +761,26 @@ class PaymentController extends Controller
             // Delete the payment
             $payment->delete();
 
+            // Eğer üye detay sayfasından geliyorsa, aynı sayfaya ödemeler sekmesinde dön
+            if (request()->has('redirect_to') && request()->redirect_to === 'member_detail_payments' && request()->has('member_id')) {
+                $memberId = request()->member_id;
+                return redirect()->route('admin.members.show', $memberId)
+                    ->with('success', 'Ödeme başarıyla silindi ve aidatlar eski durumlarına döndürüldü.')
+                    ->with('active_tab', 'payments');
+            }
 
             return redirect()->back()
                 ->with('success', 'Ödeme başarıyla silindi ve aidatlar eski durumlarına döndürüldü.');
         } catch (\Exception $e) {
             \Log::error('Payment deletion failed: ' . $e->getMessage());
+
+            // Eğer üye detay sayfasından geliyorsa, aynı sayfaya ödemeler sekmesinde dön
+            if (request()->has('redirect_to') && request()->redirect_to === 'member_detail_payments' && request()->has('member_id')) {
+                $memberId = request()->member_id;
+                return redirect()->route('admin.members.show', $memberId)
+                    ->with('error', 'Ödeme silinirken bir hata oluştu.')
+                    ->with('active_tab', 'payments');
+            }
 
             return redirect()->back()
                 ->with('error', 'Ödeme silinirken bir hata oluştu.');

@@ -1,6 +1,6 @@
 @extends('layouts.member-dashboard')
 
-@section('title', 'Ana Sayfa')
+@section('title', __('common.member_dashboard'))
 
 @section('content')
         @if(session('success'))
@@ -23,8 +23,8 @@
                         <i class="fas fa-exclamation-triangle text-amber-600 text-lg sm:text-xl"></i>
                     </div>
                     <div>
-                        <p class="font-bold text-sm sm:text-lg mb-2">Geçici Email Adresi Tespit Edildi</p>
-                        <p class="text-sm sm:text-base">Şu anda geçici bir email adresiniz var. <a href="{{ route('member.profile') }}" class="underline hover:text-amber-600 font-medium">Profil sayfanızdan</a> gerçek email adresinizi güncelleyebilirsiniz.</p>
+                        <p class="font-bold text-sm sm:text-lg mb-2">{{ __('common.temporary_email_detected') }}</p>
+                        <p class="text-sm sm:text-base">{{ __('common.you_have_temporary_email') }} <a href="{{ route('member.profile') }}" class="underline hover:text-amber-600 font-medium">{{ __('common.from_profile_page') }}</a> {{ __('common.update_email_from_profile') }}</p>
                     </div>
                 </div>
             </div>
@@ -53,17 +53,14 @@
                     </div>
                     <div class="flex-1">
                         <p class="text-xs sm:text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">
-                            Aylık Aidat Tutarı
-                            <span class="text-xs ml-1">(Monatlicher Beitrag)</span>
+                            {{ __('common.monthly_dues_amount') }}
                         </p>
                         <p class="text-3xl sm:text-5xl font-bold text-gray-900 mb-2">{{ number_format($member->monthly_dues, 2) }} €</p>
                         <p class="text-sm sm:text-lg text-teal-600 font-medium">
                             @if($member->payment_method === 'cash')
-                                Nakit ödeme
-                                <span class="text-xs sm:text-sm ml-1">(Barzahlung)</span>
+                                {{ __('common.cash_payment') }}
                             @else
-                                {{ ucfirst($member->payment_method) }} ile ödeme
-                                <span class="text-xs sm:text-sm ml-1">(mit {{ ucfirst($member->payment_method) }} bezahlen)</span>
+                                {{ __('common.payment_with') }} {{ ucfirst($member->payment_method) }}
                             @endif
                         </p>
                     </div>
@@ -78,13 +75,11 @@
                     </div>
                     <div class="flex-1">
                         <p class="text-xs sm:text-sm font-semibold text-gray-600 mb-2 uppercase tracking-wider">
-                            Gecikmiş Aidatlar
-                            <span class="text-xs ml-1">(Überfällige Beiträge)</span>
+                            {{ __('common.overdue_dues') }}
                         </p>
                         <p class="text-3xl sm:text-5xl font-bold text-gray-900 mb-2">{{ $unpaidDues->where('due_date', '<', now())->count() }}</p>
                         <p class="text-sm sm:text-lg text-red-600 font-medium">
-                            {{ number_format($unpaidDues->where('due_date', '<', now())->sum('amount'), 2) }} € toplam borç
-                            <span class="text-xs sm:text-sm ml-1">(Gesamtschulden)</span>
+                            {{ number_format($unpaidDues->where('due_date', '<', now())->sum('amount'), 2) }} € {{ __('common.total_debt') }}
                         </p>
                     </div>
                 </div>
@@ -99,8 +94,7 @@
                     <i class="fas fa-exclamation-triangle text-white text-lg sm:text-2xl"></i>
                 </div>
                 <h2 class="text-lg sm:text-2xl font-bold text-gray-900">
-                    Gecikmiş Aidatlarım
-                    <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Meine überfälligen Beiträge)</span>
+                    {{ __('common.my_overdue_dues') }}
                 </h2>
             </div>
 
@@ -109,20 +103,16 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 sm:px-8 py-4 sm:py-6 text-left text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                Dönem
-                                <span class="text-xs ml-1 hidden sm:inline">(Zeitraum)</span>
+                                {{ __('common.period') }}
                             </th>
                             <th class="px-4 sm:px-8 py-4 sm:py-6 text-left text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                Tutar
-                                <span class="text-xs ml-1 hidden sm:inline">(Betrag)</span>
+                                {{ __('common.amount') }}
                             </th>
                             <th class="px-4 sm:px-8 py-4 sm:py-6 text-left text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                Son Ödeme
-                                <span class="text-xs ml-1 hidden sm:inline">(Fälligkeitsdatum)</span>
+                                {{ __('common.due_date') }}
                             </th>
                             <th class="px-4 sm:px-8 py-4 sm:py-6 text-left text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                Durum
-                                <span class="text-xs ml-1 hidden sm:inline">(Status)</span>
+                                {{ __('common.status') }}
                             </th>
                         </tr>
                     </thead>
@@ -140,8 +130,7 @@
                             </td>
                             <td class="px-4 sm:px-8 py-4 sm:py-6 whitespace-nowrap">
                                 <span class="inline-flex px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-red-100 text-red-800 border border-red-200">
-                                    Ödenmedi
-                                    <span class="ml-1 hidden sm:inline">(Nicht bezahlt)</span>
+                                    {{ __('common.not_paid') }}
                                 </span>
                             </td>
                         </tr>
@@ -163,14 +152,12 @@
                         <i class="fas fa-chart-line text-white text-2xl"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900">
-                        Ödeme Özeti
-                        <span class="text-sm text-gray-600 ml-2">(Zahlungsübersicht)</span>
+                        {{ __('common.payment_summary') }}
                     </h2>
                 </div>
                 <a href="{{ route('member.payments') }}" class="inline-flex items-center bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl transition-all duration-300 text-base font-semibold shadow-lg hover:shadow-xl">
                     <i class="fas fa-receipt mr-2"></i>
-                    Tüm Ödemelerim
-                    <span class="text-xs ml-1">(Alle meine Zahlungen)</span>
+                    {{ __('common.all_my_payments') }}
                 </a>
             </div>
 
@@ -178,22 +165,19 @@
                 <div class="text-center p-6 bg-gray-50 rounded-2xl">
                     <div class="text-4xl font-bold text-gray-900 mb-3">{{ $allPayments->count() }}</div>
                     <div class="text-base text-gray-600 font-semibold">
-                        Toplam Ödeme
-                        <span class="text-xs ml-1">(Gesamtzahlungen)</span>
+                        {{ __('common.total_payments') }}
                     </div>
                 </div>
                 <div class="text-center p-6 bg-gray-50 rounded-2xl">
                     <div class="text-4xl font-bold text-gray-900 mb-3">{{ number_format($allPayments->count() > 0 ? $allPayments->sum('amount') : 0, 0) }} €</div>
                     <div class="text-base text-gray-600 font-semibold">
-                        Toplam Tutar
-                        <span class="text-xs ml-1">(Gesamtbetrag)</span>
+                        {{ __('common.total_amount') }}
                     </div>
                 </div>
                 <div class="text-center p-6 bg-gray-50 rounded-2xl">
                     <div class="text-4xl font-bold text-gray-900 mb-3">{{ $allPayments->first() ? $allPayments->first()->payment_date->format('m/Y') : '-' }}</div>
                     <div class="text-base text-gray-600 font-semibold">
-                        Son Ödeme
-                        <span class="text-xs ml-1">(Letzte Zahlung)</span>
+                        {{ __('common.last_payment') }}
                     </div>
                 </div>
             </div>

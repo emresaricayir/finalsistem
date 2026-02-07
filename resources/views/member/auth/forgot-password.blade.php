@@ -37,6 +37,22 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    @php
+        // Tema renklerini al
+        $themePrimaryColor = \App\Models\Settings::get('theme_primary_color', '#085952');
+        $themeSecondaryColor = \App\Models\Settings::get('theme_secondary_color', '#0a7b73');
+        $themeHoverColor = \App\Models\Settings::get('theme_hover_color', '#0f766e');
+        $themeLinkColor = \App\Models\Settings::get('theme_link_color', '#0d9488');
+        $themeGradientStart = \App\Models\Settings::get('theme_gradient_start', '#076961');
+        $themeGradientEnd = \App\Models\Settings::get('theme_gradient_end', '#0a7b6e');
+        $themeGradientDirection = \App\Models\Settings::get('theme_gradient_direction', 'to right');
+        $themeButtonColor = \App\Models\Settings::get('theme_button_color', '#0d9488');
+        $themeUseGradient = \App\Models\Settings::get('theme_use_gradient', false);
+        $themeGradientCss = \App\Models\Settings::get('theme_gradient_css', 'linear-gradient(to right, #076961, #0a7b6e)');
+    @endphp
+    
+    @include('partials.theme-styles')
 </head>
 <body class="bg-gray-50 font-sans">
     @include('partials.top-header')

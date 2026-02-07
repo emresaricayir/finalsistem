@@ -41,6 +41,70 @@
         </div>
     </div>
 
+    <!-- Privacy Consent Withdrawals Section -->
+    @if(isset($recentPrivacyWithdrawals) && $recentPrivacyWithdrawals->count() > 0)
+    <div class="bg-white rounded-2xl shadow-sm border border-yellow-200 overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 border-b border-yellow-200 px-6 py-4">
+            <div class="flex items-center">
+                <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Gizlilik Politikası Rıza Geri Çekmeleri</h2>
+                    <p class="text-gray-600 text-sm">DSGVO gereği üyeler tarafından rıza geri çekildi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="space-y-4">
+                @foreach($recentPrivacyWithdrawals as $withdrawal)
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-yellow-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-user-shield text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ $withdrawal->member->full_name }}</h3>
+                                    <p class="text-sm text-gray-600">Üye No: {{ $withdrawal->member->member_no }} | Email: {{ $withdrawal->member->email }}</p>
+                                </div>
+                            </div>
+                            @if($withdrawal->notes)
+                            <div class="mt-3 bg-white rounded-lg p-3 border border-yellow-200">
+                                <p class="text-sm text-gray-700"><strong>Not:</strong> {{ $withdrawal->notes }}</p>
+                            </div>
+                            @endif
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-clock mr-1"></i>
+                                Geri Çekilme Tarihi: {{ $withdrawal->withdrawn_at->format('d.m.Y H:i') }}
+                            </p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <a href="{{ route('admin.members.show', $withdrawal->member->id) }}" 
+                               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg">
+                                <i class="fas fa-eye mr-2"></i>
+                                Üye Detayı
+                            </a>
+                            <form action="{{ route('admin.members.privacy-withdrawals.mark-notified', $withdrawal->id) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" 
+                                        class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center shadow-md hover:shadow-lg">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Okundu Olarak İşaretle
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Deletion Requests Section -->
     @if(isset($pendingDeletionRequests) && $pendingDeletionRequests->count() > 0)
     <div class="bg-white rounded-2xl shadow-sm border border-red-200 overflow-hidden">
@@ -610,6 +674,10 @@
                                 @endif
                             </a>
                         </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            Gizlilik Rızası
+                        </th>
                         <th class="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <i class="fas fa-cog mr-2"></i>
                             İşlemler
@@ -696,6 +764,22 @@
                                         <i class="fas fa-check-circle mr-1"></i>
                                         Gecikme yok
                                     </div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($member->privacy_consent)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Verildi
+                                        @if($member->privacy_consent_date)
+                                            <span class="ml-1">({{ $member->privacy_consent_date->format('d.m.Y') }})</span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                        Verilmedi
+                                    </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

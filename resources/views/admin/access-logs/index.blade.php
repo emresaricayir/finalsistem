@@ -58,6 +58,10 @@
                     <option value="payment_delete" {{ request('action') == 'payment_delete' ? 'selected' : '' }}>Ödeme Silindi</option>
                     <option value="due_create" {{ request('action') == 'due_create' ? 'selected' : '' }}>Aidat Oluşturuldu</option>
                     <option value="due_delete" {{ request('action') == 'due_delete' ? 'selected' : '' }}>Aidat Silindi</option>
+                    <option value="deletion_request" {{ request('action') == 'deletion_request' ? 'selected' : '' }}>Silme Talebi Gönderildi</option>
+                    <option value="consent_withdrawal" {{ request('action') == 'consent_withdrawal' ? 'selected' : '' }}>Rıza Geri Çekildi</option>
+                    <option value="consent_given" {{ request('action') == 'consent_given' ? 'selected' : '' }}>Rıza Verildi</option>
+                    <option value="member_no_changed" {{ request('action') == 'member_no_changed' ? 'selected' : '' }}>Üye Numarası Değiştirildi</option>
                 </select>
             </div>
 
@@ -134,6 +138,7 @@
                                     'payment_delete' => 'bg-rose-100 text-rose-800',
                                     'due_create' => 'bg-cyan-100 text-cyan-800',
                                     'due_delete' => 'bg-orange-100 text-orange-800',
+                                    'member_no_changed' => 'bg-amber-100 text-amber-800',
                                 ];
                                 $color = $actionColors[$log->action] ?? 'bg-gray-100 text-gray-800';
                             @endphp

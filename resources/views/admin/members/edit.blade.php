@@ -120,10 +120,33 @@
                         <label for="member_no" class="block text-sm font-medium text-gray-700 mb-2">
                             <i class="fas fa-id-badge mr-2 text-orange-500"></i>
                             Üye Numarası
+                            @if(auth()->user()->hasRole('super_admin'))
+                                <span class="ml-2 text-xs text-orange-600 font-semibold">(Sadece Super Admin)</span>
+                            @endif
                         </label>
-                        <input type="text" name="member_no" id="member_no" value="{{ old('member_no', $member->member_no) }}"
-                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('member_no') border-red-500 @enderror"
-                               placeholder="ÜYE001">
+                        
+                        @if(auth()->user()->hasRole('super_admin'))
+                            <!-- Super Admin için uyarı mesajı -->
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                                <p class="text-sm text-yellow-800">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <strong>Uyarı:</strong> Bu numara bağış sertifikalarında ve belgelerde görünüyor. 
+                                    Değiştirmek eski belgelerle tutarsızlık yaratabilir.
+                                </p>
+                            </div>
+                            <input type="text" name="member_no" id="member_no" value="{{ old('member_no', $member->member_no) }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('member_no') border-red-500 @enderror"
+                                   placeholder="ÜYE001">
+                        @else
+                            <!-- Normal admin için readonly -->
+                            <input type="text" name="member_no" id="member_no" value="{{ old('member_no', $member->member_no) }}"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-100 cursor-not-allowed"
+                                   placeholder="ÜYE001" readonly>
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Üye numarasını sadece super admin değiştirebilir.
+                            </p>
+                        @endif
                         @error('member_no')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -261,6 +284,24 @@
                             <option value="lastschrift_annual" {{ old('payment_method', $member->payment_method) == 'lastschrift_annual' ? 'selected' : '' }}>Lastschrift (Yıllık)</option>
                         </select>
                         @error('payment_method')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lock mr-2 text-blue-500"></i>
+                            Şifre
+                            <span class="text-xs text-gray-500 ml-1">(Boş bırakılırsa değişmez)</span>
+                        </label>
+                        <input type="text" name="password" id="password"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password') border-red-500 @enderror"
+                               placeholder="Yeni şifre girin (boş bırakılabilir)">
+                        <p class="mt-1 text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Şifre girilirse otomatik olarak hash'lenir ve kaydedilir. Boş bırakılırsa mevcut şifre korunur.
+                        </p>
+                        @error('password')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

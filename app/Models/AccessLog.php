@@ -51,6 +51,10 @@ class AccessLog extends Model
             'payment_delete' => 'Ödeme Silindi',
             'due_create' => 'Aidat Oluşturuldu',
             'due_delete' => 'Aidat Silindi',
+            'deletion_request' => 'Silme Talebi Gönderildi',
+            'consent_withdrawal' => 'Rıza Geri Çekildi',
+            'consent_given' => 'Rıza Verildi',
+            'member_no_changed' => 'Üye Numarası Değiştirildi',
             default => ucfirst($this->action),
         };
     }

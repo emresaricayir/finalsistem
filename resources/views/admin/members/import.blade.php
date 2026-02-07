@@ -224,8 +224,16 @@
                                 <span class="text-gray-600">Üyelik tarihi (varsayılan: 2025-01-01)</span>
                             </div>
                             <div class="flex items-center text-sm">
+                                <span class="font-medium text-gray-700 w-24">cinsiyet:</span>
+                                <span class="text-gray-600">Cinsiyet (Erkek/Männlich/Kadın/Weiblich, opsiyonel)</span>
+                            </div>
+                            <div class="flex items-center text-sm">
                                 <span class="font-medium text-gray-700 w-24">odeme_yontemi:</span>
-                                <span class="text-gray-600">Ödeme yöntemi (nakit/banka, varsayılan: banka)</span>
+                                <span class="text-gray-600">Ödeme yöntemi (nakit/banka/lastschrift, varsayılan: banka)</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <span class="font-medium text-gray-700 w-24">sifre:</span>
+                                <span class="text-gray-600">Şifre (opsiyonel, boş bırakılırsa admin panelinden oluşturulur)</span>
                             </div>
                         </div>
                     </div>
@@ -277,6 +285,22 @@
                         </div>
                     </div>
 
+                    <!-- Gender Options -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-venus-mars text-purple-600 mr-3 mt-0.5"></i>
+                            <div class="text-sm text-purple-800">
+                                <p class="font-semibold mb-2">Cinsiyet Seçenekleri:</p>
+                                <ul class="space-y-1">
+                                    <li>• <strong>Erkek</strong> veya <strong>Männlich</strong> → Erkek</li>
+                                    <li>• <strong>Kadın</strong> veya <strong>Weiblich</strong> → Kadın</li>
+                                    <li>• Kısa formlar: <strong>e</strong>, <strong>m</strong>, <strong>k</strong>, <strong>f</strong>, <strong>w</strong></li>
+                                    <li>• Boş bırakılırsa → Cinsiyet belirtilmemiş</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Payment Method Options -->
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div class="flex items-start">
@@ -288,6 +312,22 @@
                                     <li>• <strong>banka</strong> → Banka transferi</li>
                                     <li>• <strong>lastschrift</strong> → Lastschrift (SEPA)</li>
                                     <li>• Boş bırakılırsa → Banka transferi</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Options -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-lock text-blue-600 mr-3 mt-0.5"></i>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-semibold mb-2">Şifre Seçenekleri:</p>
+                                <ul class="space-y-1">
+                                    <li>• <strong>Şifre belirtilirse</strong> → O şifre kullanılır</li>
+                                    <li>• <strong>Boş bırakılırsa</strong> → Şifre oluşturulmaz (null)</li>
+                                    <li>• <strong>Geçici email'li üyeler</strong> için admin panelinden şifre oluşturulur</li>
+                                    <li>• Üye gerçek email'ini güncellediğinde şifre belirleme linki gönderilir</li>
                                 </ul>
                             </div>
                         </div>

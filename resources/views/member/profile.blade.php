@@ -1,6 +1,6 @@
 @extends('layouts.member-profile')
 
-@section('title', 'Profil')
+@section('title', __('common.member_profile'))
 
 @section('content-class', 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12')
 
@@ -39,12 +39,10 @@
                 </div>
                 <div class="flex-1">
                     <h2 class="text-lg sm:text-2xl font-bold text-gray-900">
-                        Üye Bilgileri
-                        <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Mitgliedsinformationen)</span>
+                        {{ __('common.member_information') }}
                     </h2>
                     <p class="text-gray-600 mt-1 text-sm sm:text-base">
-                        Kişisel bilgileriniz
-                        <span class="text-xs ml-1">(Ihre persönlichen Daten)</span>
+                        {{ __('common.your_personal_data') }}
                     </p>
                 </div>
             </div>
@@ -54,8 +52,7 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-user text-blue-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-blue-700 uppercase tracking-wider">
-                            Adı ve Soyadı
-                            <span class="text-xs ml-1">(Vor- und Nachname)</span>
+                            {{ __('common.name_and_surname') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">{{ $member->name }} {{ $member->surname }}</p>
@@ -65,8 +62,7 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-id-badge text-green-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-green-700 uppercase tracking-wider">
-                            Üye Numarası
-                            <span class="text-xs ml-1">(Mitgliedsnummer)</span>
+                            {{ __('common.member_number') }}
                         </label>
                     </div>
                     <p class="text-gray-900 font-mono text-lg font-semibold">{{ $member->member_no }}</p>
@@ -76,8 +72,7 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-envelope text-purple-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-purple-700 uppercase tracking-wider">
-                            E-Mail
-                            <span class="text-xs ml-1">(E-Mail)</span>
+                            {{ __('common.email') }}
                         </label>
                     </div>
                     <p class="text-gray-900">
@@ -87,8 +82,7 @@
                                 {{ $member->email }}
                             </span>
                             <span class="ml-2 px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full">
-                                Geçici Email
-                                <span class="ml-1">(Temporäre E-Mail)</span>
+                                {{ __('common.temporary_email') }}
                             </span>
                         @else
                             {{ $member->email }}
@@ -100,15 +94,11 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-calendar text-red-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-red-700 uppercase tracking-wider">
-                            Doğum Tarihi
-                            <span class="text-xs ml-1">(Geburtsdatum)</span>
+                            {{ __('common.birth_date') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">
-                        {{ $member->birth_date ? $member->birth_date->format('d.m.Y') : 'Belirtilmemiş' }}
-                        @if(!$member->birth_date)
-                            <span class="text-sm text-gray-500 ml-1">(Nicht angegeben)</span>
-                        @endif
+                        {{ $member->birth_date ? $member->birth_date->format('d.m.Y') : __('common.not_specified') }}
                     </p>
                 </div>
 
@@ -116,15 +106,11 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-map-marker-alt text-orange-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-orange-700 uppercase tracking-wider">
-                            Doğum Yeri
-                            <span class="text-xs ml-1">(Geburtsort)</span>
+                            {{ __('common.birth_place') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">
-                        {{ $member->birth_place ?: 'Belirtilmemiş' }}
-                        @if(!$member->birth_place)
-                            <span class="text-sm text-gray-500 ml-1">(Nicht angegeben)</span>
-                        @endif
+                        {{ $member->birth_place ?: __('common.not_specified') }}
                     </p>
                 </div>
 
@@ -132,15 +118,11 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-flag text-indigo-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-indigo-700 uppercase tracking-wider">
-                            Uyruk
-                            <span class="text-xs ml-1">(Staatsangehörigkeit)</span>
+                            {{ __('common.nationality') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">
-                        {{ $member->nationality ?: 'Belirtilmemiş' }}
-                        @if(!$member->nationality)
-                            <span class="text-sm text-gray-500 ml-1">(Nicht angegeben)</span>
-                        @endif
+                        {{ $member->nationality ?: __('common.not_specified') }}
                     </p>
                 </div>
 
@@ -148,15 +130,11 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-briefcase text-pink-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-pink-700 uppercase tracking-wider">
-                            Meslek
-                            <span class="text-xs ml-1">(Beruf)</span>
+                            {{ __('common.occupation') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">
-                        {{ $member->occupation ?: 'Belirtilmemiş' }}
-                        @if(!$member->occupation)
-                            <span class="text-sm text-gray-500 ml-1">(Nicht angegeben)</span>
-                        @endif
+                        {{ $member->occupation ?: __('common.not_specified') }}
                     </p>
                 </div>
 
@@ -164,8 +142,7 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-calendar-plus text-teal-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-teal-700 uppercase tracking-wider">
-                            Üyelik Tarihi
-                            <span class="text-xs ml-1">(Mitgliedschaftsdatum)</span>
+                            {{ __('common.membership_date') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">{{ $member->membership_date->format('d.m.Y') }}</p>
@@ -175,15 +152,11 @@
                     <div class="flex items-center mb-3">
                         <i class="fas fa-home text-cyan-600 text-lg mr-2"></i>
                         <label class="text-sm font-semibold text-cyan-700 uppercase tracking-wider">
-                            Adres
-                            <span class="text-xs ml-1">(Adresse)</span>
+                            {{ __('common.address') }}
                         </label>
                     </div>
                     <p class="text-gray-900 text-lg font-semibold">
-                        {{ $member->address ?: 'Belirtilmemiş' }}
-                        @if(!$member->address)
-                            <span class="text-sm text-gray-500 ml-1">(Nicht angegeben)</span>
-                        @endif
+                        {{ $member->address ?: __('common.not_specified') }}
                     </p>
                 </div>
             </div>
@@ -262,6 +235,57 @@
                             class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 sm:py-4 px-8 sm:px-12 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center w-full sm:w-auto">
                         <i class="fas fa-user-times mr-2 sm:mr-3 text-sm sm:text-base"></i>
                         <span class="text-sm sm:text-base">{{ __('common.withdraw_consent') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        @endif
+
+        <!-- Privacy Consent Section (Rıza Yoksa) -->
+        @if(!$member->privacy_consent)
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
+                    <i class="fas fa-user-shield text-white text-lg sm:text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-lg sm:text-2xl font-bold text-gray-900">
+                        {{ __('common.privacy_consent_title') }}
+                    </h2>
+                    <p class="text-gray-600 mt-1 text-sm sm:text-base">
+                        {{ __('common.privacy_consent_desc') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-0.5"></i>
+                    <div class="text-sm text-yellow-800">
+                        <p class="font-semibold mb-2">Gizlilik Politikası Rızası Verilmedi</p>
+                        <p>Kişisel verilerinizin işlenmesi için gizlilik politikası rızası vermeniz gerekmektedir.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('member.privacy.consent.give') }}" method="POST" class="space-y-4 sm:space-y-6">
+                @csrf
+                @method('PUT')
+                
+                <div class="flex items-start">
+                    <input type="checkbox" name="confirm" id="consent_give_confirm" required
+                           class="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                    <label for="consent_give_confirm" class="ml-3 text-sm text-gray-700">
+                        <a href="/sayfa/datenschutz" target="_blank" class="text-blue-600 hover:underline">
+                            Gizlilik Politikası</a>'nı okudum ve kişisel verilerimin işlenmesine rıza gösteriyorum.
+                    </label>
+                </div>
+
+                <div class="flex justify-center pt-4 sm:pt-6">
+                    <button type="submit"
+                            class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 sm:py-4 px-8 sm:px-12 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center w-full sm:w-auto">
+                        <i class="fas fa-check-circle mr-2 sm:mr-3 text-sm sm:text-base"></i>
+                        <span class="text-sm sm:text-base">Rızayı Ver</span>
                     </button>
                 </div>
             </form>
@@ -349,12 +373,10 @@
                 </div>
                 <div class="flex-1">
                     <h2 class="text-lg sm:text-2xl font-bold text-gray-900">
-                        Bilgileri Güncelle
-                        <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Informationen aktualisieren)</span>
+                        {{ __('common.update_information') }}
                     </h2>
                     <p class="text-gray-600 mt-1 text-sm sm:text-base">
-                        Kişisel bilgilerinizi güncelleyin
-                        <span class="text-xs ml-1">(Aktualisieren Sie Ihre persönlichen Daten)</span>
+                        {{ __('common.update_information_desc') }}
                     </p>
                 </div>
             </div>
@@ -369,12 +391,10 @@
                             <i class="fas fa-exclamation-triangle text-amber-600 mr-3 mt-0.5"></i>
                             <div class="text-sm text-amber-800">
                                 <p class="font-semibold mb-1">
-                                    Geçici Email Adresi Tespit Edildi
-                                    <span class="text-xs ml-1">(Temporäre E-Mail-Adresse erkannt)</span>
+                                    {{ __('common.temporary_email_detected') }}
                                 </p>
                                 <p>
-                                    Şu anda geçici bir email adresiniz var. Lütfen gerçek email adresinizi girin ve güncelleyin.
-                                    <span class="text-xs ml-1">(Sie haben derzeit eine temporäre E-Mail-Adresse. Bitte geben Sie Ihre echte E-Mail-Adresse ein und aktualisieren Sie sie.)</span>
+                                    {{ __('common.update_temporary_email_desc') }}
                                 </p>
                             </div>
                         </div>
@@ -385,19 +405,16 @@
                 <div class="bg-gray-50 rounded-2xl p-4 sm:p-6">
                     <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center">
                         <i class="fas fa-phone text-blue-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
-                        İletişim Bilgileri
-                        <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Kontaktinformationen)</span>
+                        {{ __('common.contact_information_label') }}
                     </h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label for="email" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-envelope mr-2 text-blue-500"></i>E-Mail Adresi
-                                <span class="text-xs ml-1">(E-Mail-Adresse)</span>
+                                <i class="fas fa-envelope mr-2 text-blue-500"></i>{{ __('common.email_address_label') }}
                                 @if(str_contains($member->email, '@' . \App\Models\Settings::getTemporaryEmailDomain()))
                                     <span class="ml-2 px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full">
-                                        Güncelleme Gerekli
-                                        <span class="ml-1">(Aktualisierung erforderlich)</span>
+                                        {{ __('common.update_required') }}
                                     </span>
                                 @endif
                             </label>
@@ -409,7 +426,7 @@
                             @if(str_contains($member->email, '@uye.com'))
                                 <p class="text-amber-600 text-sm mt-2">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    Geçici email adresinizi gerçek email adresinizle değiştirin.
+                                    {{ __('common.update_temporary_email') }}
                                 </p>
                             @endif
                             @error('email')
@@ -419,8 +436,7 @@
 
                         <div>
                             <label for="phone" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-phone mr-2 text-blue-500"></i>Telefon
-                                <span class="text-xs ml-1">(Telefon)</span>
+                                <i class="fas fa-phone mr-2 text-blue-500"></i>{{ __('common.phone_label') }}
                             </label>
                             <input type="tel" name="phone" id="phone"
                                    value="{{ old('phone', $member->phone) }}"
@@ -437,15 +453,13 @@
                 <div class="bg-gray-50 rounded-2xl p-4 sm:p-6">
                     <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center">
                         <i class="fas fa-user text-green-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
-                        Kişisel Bilgiler
-                        <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Persönliche Informationen)</span>
+                        {{ __('common.personal_information_label') }}
                     </h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                             <label for="birth_date" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-calendar mr-2 text-green-500"></i>Doğum Tarihi
-                                <span class="text-xs ml-1">(Geburtsdatum)</span>
+                                <i class="fas fa-calendar mr-2 text-green-500"></i>{{ __('common.birth_date_label') }}
                             </label>
                             <input type="date" name="birth_date" id="birth_date" lang="tr"
                                    value="{{ old('birth_date', $member->birth_date ? $member->birth_date->format('Y-m-d') : '') }}"
@@ -457,13 +471,12 @@
 
                         <div>
                             <label for="birth_place" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-map-marker-alt mr-2 text-green-500"></i>Doğum Yeri
-                                <span class="text-xs ml-1">(Geburtsort)</span>
+                                <i class="fas fa-map-marker-alt mr-2 text-green-500"></i>{{ __('common.birth_place_label') }}
                             </label>
                             <input type="text" name="birth_place" id="birth_place"
                                    value="{{ old('birth_place', $member->birth_place) }}"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
-                                   placeholder="Doğum yeriniz">
+                                   placeholder="{{ __('common.birth_place_placeholder') }}">
                             @error('birth_place')
                                 <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                             @enderror
@@ -471,13 +484,12 @@
 
                         <div>
                             <label for="nationality" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-flag mr-2 text-green-500"></i>Uyruk
-                                <span class="text-xs ml-1">(Staatsangehörigkeit)</span>
+                                <i class="fas fa-flag mr-2 text-green-500"></i>{{ __('common.nationality_label') }}
                             </label>
                             <input type="text" name="nationality" id="nationality"
                                    value="{{ old('nationality', $member->nationality) }}"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
-                                   placeholder="Uyruğunuz">
+                                   placeholder="{{ __('common.nationality_placeholder') }}">
                             @error('nationality')
                                 <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                             @enderror
@@ -485,13 +497,12 @@
 
                         <div>
                             <label for="occupation" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-briefcase mr-2 text-green-500"></i>Meslek
-                                <span class="text-xs ml-1">(Beruf)</span>
+                                <i class="fas fa-briefcase mr-2 text-green-500"></i>{{ __('common.occupation_label') }}
                             </label>
                             <input type="text" name="occupation" id="occupation"
                                    value="{{ old('occupation', $member->occupation) }}"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-300"
-                                   placeholder="Mesleğiniz">
+                                   placeholder="{{ __('common.occupation_placeholder') }}">
                             @error('occupation')
                                 <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                             @enderror
@@ -509,12 +520,11 @@
 
                     <div>
                         <label for="address" class="block text-sm font-semibold text-gray-700 mb-3">
-                            <i class="fas fa-home mr-2 text-purple-500"></i>Adres *
-                            <span class="text-xs ml-1">(Adresse)</span>
+                            <i class="fas fa-home mr-2 text-purple-500"></i>{{ __('common.address_label') }} *
                         </label>
                         <textarea name="address" id="address" rows="4" required
                                   class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 resize-none"
-                                  placeholder="Adresiniz">{{ old('address', $member->address) }}</textarea>
+                                  placeholder="{{ __('common.address_placeholder') }}">{{ old('address', $member->address) }}</textarea>
                         @error('address')
                             <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                         @enderror
@@ -525,19 +535,17 @@
                 <div class="bg-gray-50 rounded-2xl p-4 sm:p-6">
                     <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center">
                         <i class="fas fa-lock text-red-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
-                        Şifre Değiştir
-                        <span class="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">(Passwort ändern)</span>
+                        {{ __('common.change_password') }}
                     </h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div>
                             <label for="current_password" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-key mr-2 text-red-500"></i>Mevcut Şifre
-                                <span class="text-xs ml-1">(Aktuelles Passwort)</span>
+                                <i class="fas fa-key mr-2 text-red-500"></i>{{ __('common.current_password') }}
                             </label>
                             <input type="password" name="current_password" id="current_password"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300"
-                                   placeholder="Mevcut şifreniz">
+                                   placeholder="{{ __('common.current_password_placeholder') }}">
                             @error('current_password')
                                 <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                             @enderror
@@ -545,12 +553,11 @@
 
                         <div>
                             <label for="new_password" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-lock mr-2 text-red-500"></i>Yeni Şifre
-                                <span class="text-xs ml-1">(Neues Passwort)</span>
+                                <i class="fas fa-lock mr-2 text-red-500"></i>{{ __('common.new_password') }}
                             </label>
                             <input type="password" name="new_password" id="new_password"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300"
-                                   placeholder="Yeni şifreniz">
+                                   placeholder="{{ __('common.new_password_placeholder') }}">
                             @error('new_password')
                                 <p class="text-red-600 text-sm mt-2">{{ $message }}</p>
                             @enderror
@@ -558,12 +565,11 @@
 
                         <div>
                             <label for="new_password_confirmation" class="block text-sm font-semibold text-gray-700 mb-3">
-                                <i class="fas fa-lock mr-2 text-red-500"></i>Yeni Şifre (Tekrar)
-                                <span class="text-xs ml-1">(Neues Passwort wiederholen)</span>
+                                <i class="fas fa-lock mr-2 text-red-500"></i>{{ __('common.confirm_password') }}
                             </label>
                             <input type="password" name="new_password_confirmation" id="new_password_confirmation"
                                    class="w-full bg-white border border-gray-300 rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-300"
-                                   placeholder="Yeni şifrenizi tekrar girin">
+                                   placeholder="{{ __('common.confirm_password_placeholder') }}">
                         </div>
                     </div>
                 </div>
@@ -573,8 +579,7 @@
                     <button type="submit"
                             class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 sm:py-4 px-8 sm:px-12 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center w-full sm:w-auto">
                         <i class="fas fa-save mr-2 sm:mr-3 text-sm sm:text-base"></i>
-                        <span class="text-sm sm:text-base">Bilgileri Güncelle</span>
-                        <span class="text-xs sm:text-sm ml-1 sm:ml-2 hidden sm:inline">(Informationen aktualisieren)</span>
+                        <span class="text-sm sm:text-base">{{ __('common.save_changes_button') }}</span>
                     </button>
                 </div>
                 </form>
