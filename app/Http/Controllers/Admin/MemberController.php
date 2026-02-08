@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
@@ -267,35 +268,50 @@ class MemberController extends Controller
         $maxAttempts = 1000; // Daha fazla deneme
         $attempt = 0;
 
+        // En yüksek mevcut üye numarasını bul
+        $lastMember = Member::where('member_no', 'LIKE', 'Mitglied%')
+            ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
+            ->first();
+
+        // Başlangıç numarasını belirle
+        if ($lastMember) {
+            // Son numaradan bir sonrakini al
+            $lastNumber = (int) substr($lastMember->member_no, 8); // "Mitglied" kısmını çıkar
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
         do {
             $attempt++;
 
-            // En yüksek mevcut üye numarasını bul
-            $lastMember = Member::where('member_no', 'LIKE', 'Mitglied%')
-                ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
-                ->first();
-
-            if ($lastMember) {
-                // Son numaradan bir sonrakini al
-                $lastNumber = (int) substr($lastMember->member_no, 8); // "Mitglied" kısmını çıkar
-                $nextNumber = $lastNumber + $attempt; // Her denemede daha fazla artır
-            } else {
-                $nextNumber = $attempt;
+            if ($attempt > $maxAttempts) {
+                // Eğer 1000 deneme sonunda da bulamazsa, timestamp kullan
+                return 'Mitglied' . substr(time(), -3);
             }
 
             $memberNo = 'Mitglied' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
             // Bu numaranın kullanılıp kullanılmadığını kontrol et (soft delete dahil)
             $exists = Member::withTrashed()->where('member_no', $memberNo)->exists();
-
+            
+            // Force delete edilen üyelerin numaralarını da kontrol et (AccessLog snapshot'larından)
+            $forceDeleted = false;
             if (!$exists) {
-                return $memberNo;
+                $forceDeleted = \App\Models\AccessLog::where('action', 'force_delete')
+                    ->whereNotNull('details')
+                    ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($memberNo)])
+                    ->exists();
             }
 
-        } while ($attempt < $maxAttempts);
+            // Eğer numara kullanılabilir değilse (exists veya forceDeleted), bir sonraki numarayı dene
+            if ($exists || $forceDeleted) {
+                $nextNumber++;
+            }
 
-        // Eğer 1000 deneme sonunda da bulamazsa, timestamp kullan
-        return 'Mitglied' . substr(time(), -3);
+        } while ($exists || $forceDeleted);
+
+        return $memberNo;
     }
 
     /**
@@ -413,7 +429,15 @@ class MemberController extends Controller
             'gender' => 'nullable|in:male,female',
             'email' => 'required|email|unique:members,email,' . $id,
             'phone' => 'nullable|string|max:20',
-            'member_no' => 'nullable|string|max:15|unique:members,member_no,' . $id,
+            'member_no' => [
+                'nullable',
+                'string',
+                'max:15',
+                Rule::unique('members', 'member_no')
+                    ->ignore($id), // Mevcut üyeyi ignore et
+                    // Not: Laravel'in unique validation'ı default olarak soft deleted kayıtları da kontrol eder
+                    // Bu sayede silinen üyelerin numaraları tekrar kullanılamaz
+            ],
             'birth_date' => 'nullable|date',
             'birth_place' => 'nullable|string|max:255',
             'nationality' => 'nullable|string|max:255',
@@ -428,7 +452,7 @@ class MemberController extends Controller
             'signature' => 'nullable|string',
             'sepa_agreement' => 'nullable|boolean',
         ], [
-            'member_no.unique' => 'Bu üye numarası zaten kullanılıyor.',
+            'member_no.unique' => 'Bu üye numarası zaten kullanılıyor (silinen üyeler dahil).',
             'email.unique' => 'Bu e-posta adresi zaten kullanılıyor.',
         ]);
 
@@ -441,6 +465,21 @@ class MemberController extends Controller
                     ->withInput()
                     ->with('error', 'Üye numarasını sadece super admin değiştirebilir.');
             }
+            
+            // Force delete edilen üyelerin numaralarını kontrol et (AccessLog snapshot'larından)
+            // JSON içinde member_snapshot->member_no kontrolü
+            // MySQL/MariaDB için JSON_EXTRACT kullanıyoruz (performans için)
+            $forceDeletedMemberNo = \App\Models\AccessLog::where('action', 'force_delete')
+                ->whereNotNull('details')
+                ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($request->member_no)])
+                ->exists();
+            
+            if ($forceDeletedMemberNo) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Bu üye numarası kalıcı olarak silinen bir üyeye aitti ve tekrar kullanılamaz.');
+            }
+            
             $memberNoChanged = true;
         }
         
@@ -490,6 +529,14 @@ class MemberController extends Controller
         $member->update($validated);
 
         // Log access (DSGVO - Veri erişim kaydı)
+        // Otomatik timestamp alanlarını filtrele (updated_at, created_at)
+        $changes = $member->getChanges();
+        $excludedFields = ['updated_at', 'created_at'];
+        $changedFields = array_filter(
+            array_keys($changes),
+            fn($field) => !in_array($field, $excludedFields)
+        );
+        
         \App\Models\AccessLog::create([
             'member_id' => $member->id,
             'user_id' => auth()->id(),
@@ -497,7 +544,7 @@ class MemberController extends Controller
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'details' => [
-                'changed_fields' => array_keys($member->getChanges()),
+                'changed_fields' => array_values($changedFields), // array_values ile indexleri sıfırla
             ],
         ]);
 
@@ -2216,6 +2263,8 @@ class MemberController extends Controller
 
     /**
      * Permanently delete a member.
+     * 
+     * DSGVO uyumluluğu: Üye silinmeden önce log kayıtlarına snapshot eklenir
      */
     public function forceDelete(string $id)
     {
@@ -2224,10 +2273,49 @@ class MemberController extends Controller
         }
 
         $member = Member::onlyTrashed()->findOrFail($id);
+        
+        // DSGVO: Üye silinmeden önce log kayıtlarına snapshot ekle
+        $memberSnapshot = [
+            'member_id' => $member->id,
+            'member_no' => $member->member_no,
+            'name' => $member->name,
+            'surname' => $member->surname,
+            'email' => $member->email,
+            'deleted_at' => now()->toDateTimeString(),
+            'deleted_by' => auth()->id(),
+            'snapshot_reason' => 'Üye kalıcı olarak silindi, log kayıtları korunuyor (DSGVO)',
+        ];
+        
+        // Bu üyeye ait tüm log kayıtlarını bul ve snapshot ekle
+        \App\Models\AccessLog::where('member_id', $member->id)
+            ->whereNull('details->member_snapshot') // Daha önce snapshot eklenmemiş olanlar
+            ->get()
+            ->each(function ($log) use ($memberSnapshot) {
+                $details = $log->details ?? [];
+                $details['member_snapshot'] = $memberSnapshot;
+                $log->update(['details' => $details]);
+            });
+        
+        // Son log kaydı: Üyenin kalıcı olarak silindiğini kaydet
+        \App\Models\AccessLog::create([
+            'member_id' => $member->id, // Silinmeden önce kaydediliyor
+            'user_id' => auth()->id(),
+            'action' => 'force_delete',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+            'details' => [
+                'member_snapshot' => $memberSnapshot,
+                'force_deleted_at' => now()->toDateTimeString(),
+            ],
+        ]);
+        
+        // Üyeyi kalıcı olarak sil
+        // NOT: Foreign key constraint onDelete('set null') olduğu için
+        // log kayıtlarındaki member_id null olacak ama details'te snapshot kalacak
         $member->forceDelete();
 
         return redirect()->route('admin.members.deleted')
-            ->with('success', 'Üye kalıcı olarak silindi.');
+            ->with('success', 'Üye kalıcı olarak silindi. Veri erişim logları korunuyor (DSGVO).');
     }
 
     /**

@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AccessLog extends Model
 {
     protected $fillable = [
-        'member_id',
+        'member_id', // Nullable: Üye tamamen silinse bile log kaydı tutulur (DSGVO)
         'user_id',
         'action',
         'ip_address',
         'user_agent',
-        'details',
+        'details', // Üye silinmeden önce snapshot bilgileri buraya kaydedilir
     ];
 
     protected $casts = [
@@ -25,7 +25,7 @@ class AccessLog extends Model
      */
     public function member(): BelongsTo
     {
-        return $this->belongsTo(Member::class);
+        return $this->belongsTo(Member::class)->withTrashed();
     }
 
     /**
@@ -46,6 +46,7 @@ class AccessLog extends Model
             'edit' => 'Düzenleme',
             'export' => 'Veri İndirme',
             'delete' => 'Silme',
+            'force_delete' => 'Kalıcı Silme',
             'restore' => 'Geri Getirme',
             'payment_create' => 'Ödeme Alındı',
             'payment_delete' => 'Ödeme Silindi',

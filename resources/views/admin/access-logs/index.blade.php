@@ -26,6 +26,7 @@
                     @foreach($members as $member)
                         <option value="{{ $member->id }}" {{ request('member_id') == $member->id ? 'selected' : '' }}>
                             {{ $member->surname }} {{ $member->name }} ({{ $member->member_no }})
+                            @if($member->trashed()) - Silinmiş @endif
                         </option>
                     @endforeach
                 </select>
@@ -53,6 +54,7 @@
                     <option value="edit" {{ request('action') == 'edit' ? 'selected' : '' }}>Düzenleme</option>
                     <option value="export" {{ request('action') == 'export' ? 'selected' : '' }}>Veri İndirme</option>
                     <option value="delete" {{ request('action') == 'delete' ? 'selected' : '' }}>Silme</option>
+                    <option value="force_delete" {{ request('action') == 'force_delete' ? 'selected' : '' }}>Kalıcı Silme</option>
                     <option value="restore" {{ request('action') == 'restore' ? 'selected' : '' }}>Geri Getirme</option>
                     <option value="payment_create" {{ request('action') == 'payment_create' ? 'selected' : '' }}>Ödeme Alındı</option>
                     <option value="payment_delete" {{ request('action') == 'payment_delete' ? 'selected' : '' }}>Ödeme Silindi</option>
@@ -115,8 +117,21 @@
                             <div class="text-gray-500 text-xs">{{ $log->created_at->format('H:i:s') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $log->member->full_name }}</div>
-                            <div class="text-sm text-gray-500">{{ $log->member->member_no }}</div>
+                            @if($log->member)
+                                <div class="text-sm font-medium text-gray-900">{{ $log->member->full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ $log->member->member_no }}</div>
+                                @if($log->member->trashed())
+                                    <div class="text-xs text-red-500 italic mt-1">(Silinmiş)</div>
+                                @endif
+                            @elseif($log->details && isset($log->details['member_snapshot']))
+                                @php $snapshot = $log->details['member_snapshot']; @endphp
+                                <div class="text-sm font-medium text-gray-900">{{ $snapshot['name'] ?? '' }} {{ $snapshot['surname'] ?? '' }}</div>
+                                <div class="text-sm text-gray-500">{{ $snapshot['member_no'] ?? 'N/A' }}</div>
+                                <div class="text-xs text-red-600 italic mt-1 font-semibold">(Kalıcı Olarak Silinmiş)</div>
+                            @else
+                                <div class="text-sm font-medium text-gray-500 italic">Silinmiş Üye</div>
+                                <div class="text-sm text-gray-400">ID: {{ $log->member_id ?? 'N/A' }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($log->user)
@@ -133,6 +148,7 @@
                                     'edit' => 'bg-yellow-100 text-yellow-800',
                                     'export' => 'bg-green-100 text-green-800',
                                     'delete' => 'bg-red-100 text-red-800',
+                                    'force_delete' => 'bg-red-200 text-red-900 font-bold',
                                     'restore' => 'bg-purple-100 text-purple-800',
                                     'payment_create' => 'bg-emerald-100 text-emerald-800',
                                     'payment_delete' => 'bg-rose-100 text-rose-800',
@@ -151,8 +167,76 @@
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             @if($log->details && is_array($log->details))
-                                @if(isset($log->details['changed_fields']))
-                                    <span class="text-xs">Değişen alanlar: {{ implode(', ', $log->details['changed_fields']) }}</span>
+                                @if(isset($log->details['member_snapshot']))
+                                    @php $snapshot = $log->details['member_snapshot']; @endphp
+                                    <div class="text-xs space-y-1">
+                                        <div class="font-semibold text-red-600">Üye Kalıcı Olarak Silindi</div>
+                                        <div>Üye No: {{ $snapshot['member_no'] ?? 'N/A' }}</div>
+                                        <div>Ad Soyad: {{ ($snapshot['name'] ?? '') . ' ' . ($snapshot['surname'] ?? '') }}</div>
+                                        @if(isset($snapshot['deleted_at']))
+                                            <div class="text-gray-400">Silinme Tarihi: {{ \Carbon\Carbon::parse($snapshot['deleted_at'])->format('d.m.Y H:i') }}</div>
+                                        @endif
+                                    </div>
+                                @elseif(isset($log->details['changed_fields']))
+                                    @php
+                                        // Otomatik timestamp alanlarını filtrele (eski kayıtlar için)
+                                        $excludedFields = ['updated_at', 'created_at'];
+                                        $filteredFields = array_filter(
+                                            $log->details['changed_fields'],
+                                            fn($field) => !in_array($field, $excludedFields)
+                                        );
+                                        
+                                        $fieldTranslations = [
+                                            'name' => 'Ad',
+                                            'surname' => 'Soyad',
+                                            'gender' => 'Cinsiyet',
+                                            'email' => 'E-posta',
+                                            'phone' => 'Telefon',
+                                            'member_no' => 'Üye No',
+                                            'birth_date' => 'Doğum Tarihi',
+                                            'birth_place' => 'Doğum Yeri',
+                                            'nationality' => 'Uyruk',
+                                            'family_members_count' => 'Aile Üye Sayısı',
+                                            'funeral_fund_member' => 'Cenaze Fonu Üyesi',
+                                            'community_register_member' => 'Cemaat Sicil Üyesi',
+                                            'occupation' => 'Meslek',
+                                            'address' => 'Adres',
+                                            'status' => 'Durum',
+                                            'application_status' => 'Başvuru Durumu',
+                                            'membership_date' => 'Üyelik Tarihi',
+                                            'monthly_dues' => 'Aylık Aidat',
+                                            'payment_method' => 'Ödeme Yöntemi',
+                                            'payment_frequency' => 'Ödeme Sıklığı',
+                                            'mandate_number' => 'Yetki Numarası',
+                                            'account_holder' => 'Hesap Sahibi',
+                                            'bank_name' => 'Banka Adı',
+                                            'iban' => 'IBAN',
+                                            'bic' => 'BIC',
+                                            'payment_due_date' => 'Ödeme Vadesi',
+                                            'application_date' => 'Başvuru Tarihi',
+                                            'approved_at' => 'Onay Tarihi',
+                                            'approved_by' => 'Onaylayan',
+                                            'rejection_reason' => 'Red Sebebi',
+                                            'notes' => 'Notlar',
+                                            'signature' => 'İmza',
+                                            'signature_date' => 'İmza Tarihi',
+                                            'sepa_agreement' => 'SEPA Anlaşması',
+                                            'privacy_consent' => 'Gizlilik Onayı',
+                                            'privacy_consent_date' => 'Gizlilik Onay Tarihi',
+                                            'deletion_reason' => 'Silme Sebebi',
+                                            'deleted_by' => 'Silen',
+                                            'monthly_dues_change_date' => 'Aidat Değişim Tarihi',
+                                            'previous_monthly_dues' => 'Önceki Aylık Aidat',
+                                        ];
+                                        $translatedFields = array_map(function($field) use ($fieldTranslations) {
+                                            return $fieldTranslations[$field] ?? $field;
+                                        }, $filteredFields);
+                                    @endphp
+                                    @if(count($translatedFields) > 0)
+                                        <span class="text-xs">Değişen alanlar: {{ implode(', ', $translatedFields) }}</span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    @endif
                                 @elseif(isset($log->details['deletion_reason']))
                                     <span class="text-xs">Sebep: {{ Str::limit($log->details['deletion_reason'], 50) }}</span>
                                 @elseif(isset($log->details['format']))

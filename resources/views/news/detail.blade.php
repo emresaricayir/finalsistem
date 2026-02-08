@@ -331,108 +331,134 @@
     </div>
 
     <script>
-        function shareNews(platform) {
-            const title = "{{ $news->title }}";
-            const url = window.location.href;
-            const description = "{{ Str::limit(strip_tags($news->content), 100) }}";
-            const text = `📰 ${title}\n\n${description}\n\nDetaylı bilgi için: ${url}`;
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            function shareNews(platform) {
+                const title = {!! json_encode($news->title, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+                const url = window.location.href;
+                const description = {!! json_encode(Str::limit(strip_tags($news->content), 100), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+                const text = `📰 ${title}\n\n${description}\n\nDetaylı bilgi için: ${url}`;
 
-            let shareUrl = '';
+                let shareUrl = '';
 
-            switch(platform) {
-                case 'facebook':
-                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
-                    break;
-                case 'twitter':
-                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}&url=${encodeURIComponent(url)}&hashtags=haber,{{ str_replace(' ', '', $orgName) }}`;
-                    break;
-                case 'whatsapp':
-                    shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                    break;
-                case 'telegram':
-                    shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}`;
-                    break;
-                case 'linkedin':
-                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-                    break;
-                default:
-                    // Native share or copy to clipboard
-                    if (navigator.share) {
-                        navigator.share({
-                            title: title,
-                            text: description,
-                            url: url
-                        }).catch(console.error);
-                        return;
-                    } else {
-                        copyLink();
-                        return;
-                    }
+                switch(platform) {
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
+                        break;
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}&url=${encodeURIComponent(url)}&hashtags=haber,{{ str_replace(' ', '', $orgName) }}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                        break;
+                    case 'telegram':
+                        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}`;
+                        break;
+                    case 'linkedin':
+                        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+                        break;
+                    default:
+                        // Native share or copy to clipboard
+                        if (navigator.share) {
+                            navigator.share({
+                                title: title,
+                                text: description,
+                                url: url
+                            }).catch(console.error);
+                            return;
+                        } else {
+                            copyLink();
+                            return;
+                        }
+                }
+
+                if (shareUrl) {
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
+                }
             }
 
-            if (shareUrl) {
-                window.open(shareUrl, '_blank', 'width=600,height=400');
-            }
-        }
-
-        function copyLink() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('{{ __('common.link_copied') }}', 'success');
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showToast('{{ __('common.link_copied') }}', 'success');
-            });
-        }
-
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
-
-            if (type === 'success') {
-                toast.className += ' bg-green-500';
-            } else {
-                toast.className += ' bg-blue-500';
+            function copyLink() {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}, 'success');
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}, 'success');
+                });
             }
 
-            toast.textContent = message;
-            document.body.appendChild(toast);
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
 
-            // Animate in
-            setTimeout(() => {
-                toast.classList.remove('translate-x-full');
-            }, 100);
+                if (type === 'success') {
+                    toast.className += ' bg-green-500';
+                } else {
+                    toast.className += ' bg-blue-500';
+                }
 
-            // Animate out and remove
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                // Animate in
                 setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
+                    toast.classList.remove('translate-x-full');
+                }, 100);
 
-        function openLightbox(el){
-          const src = el.getAttribute('data-full');
-          const lb = document.getElementById('lightbox');
-          const img = document.getElementById('lightbox-img');
-          img.src = src;
-          lb.classList.remove('hidden');
-          lb.classList.add('flex');
-        }
-        function closeLightbox(){
-          const lb = document.getElementById('lightbox');
-          lb.classList.add('hidden');
-          lb.classList.remove('flex');
-        }
-        document.getElementById('lightbox').addEventListener('click', function(e){ if(e.target === this){ closeLightbox(); } });
-        document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ closeLightbox(); } });
+                // Animate out and remove
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            // Lightbox functions - make them globally available
+            window.openLightbox = function(el){
+                const src = el.getAttribute('data-full');
+                const lb = document.getElementById('lightbox');
+                const img = document.getElementById('lightbox-img');
+                if (lb && img) {
+                    img.src = src;
+                    lb.classList.remove('hidden');
+                    lb.classList.add('flex');
+                }
+            };
+            
+            window.closeLightbox = function(){
+                const lb = document.getElementById('lightbox');
+                if (lb) {
+                    lb.classList.add('hidden');
+                    lb.classList.remove('flex');
+                }
+            };
+            
+            // Set up event listeners
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                lightbox.addEventListener('click', function(e){ 
+                    if(e.target === this){ 
+                        closeLightbox(); 
+                    } 
+                });
+            }
+            
+            document.addEventListener('keydown', function(e){ 
+                if(e.key === 'Escape'){ 
+                    closeLightbox(); 
+                } 
+            });
+
+            // Make shareNews globally available for onclick handlers
+            window.shareNews = shareNews;
+        });
     </script>
 
     @include('partials.footer')

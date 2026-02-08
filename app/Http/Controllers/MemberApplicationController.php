@@ -580,6 +580,29 @@ class MemberApplicationController extends Controller
         $maxAttempts = 100; // Maksimum deneme sayısı
         $attempt = 0;
 
+        // Lock ile en yüksek mevcut üye numarasını bul (race condition'ı önlemek için)
+        // Tüm Mitglied numaralarını lock'la (silinen dahil - tekrar kullanılmasın)
+        DB::table('members')
+            ->where('member_no', 'LIKE', 'Mitglied%')
+            ->lockForUpdate()
+            ->get();
+        
+        // En yüksek numarayı bul (silinen dahil - tekrar kullanılmasın)
+        $lastMember = DB::table('members')
+            ->where('member_no', 'LIKE', 'Mitglied%')
+            ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
+            ->first();
+
+        // Başlangıç numarasını belirle
+        if ($lastMember) {
+            // Son numaradan bir sonrakini al
+            // "Mitglied" 8 karakter, sonrasındaki sayıyı al
+            $lastNumber = (int) substr($lastMember->member_no, 8);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
         do {
             $attempt++;
             
@@ -587,44 +610,27 @@ class MemberApplicationController extends Controller
                 throw new \Exception('Üye numarası oluşturulamadı. Lütfen tekrar deneyin.');
             }
 
-            // Lock ile en yüksek mevcut üye numarasını bul (race condition'ı önlemek için)
-            // Önce tüm aktif Mitglied numaralarını lock'la (soft deleted hariç)
-            DB::table('members')
-                ->where('member_no', 'LIKE', 'Mitglied%')
-                ->whereNull('deleted_at') // Sadece aktif kayıtlar
-                ->lockForUpdate()
-                ->get();
-            
-            // Sonra en yüksek numarayı bul (sadece aktif kayıtlar)
-            $lastMember = DB::table('members')
-                ->where('member_no', 'LIKE', 'Mitglied%')
-                ->whereNull('deleted_at') // Sadece aktif kayıtlar
-                ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
-                ->first();
-
-            if ($lastMember) {
-                // Son numaradan bir sonrakini al
-                // "Mitglied" 8 karakter, sonrasındaki sayıyı al
-                $lastNumber = (int) substr($lastMember->member_no, 8);
-                $nextNumber = $lastNumber + 1;
-            } else {
-                $nextNumber = 1;
-            }
-
             $memberNo = 'Mitglied' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-            // Bu numaranın kullanılıp kullanılmadığını kontrol et (sadece aktif kayıtlar)
-            // Soft deleted kayıtların numaralarını tekrar kullanmıyoruz
-            $exists = Member::where('member_no', $memberNo)->exists();
-
-            // Eğer numara kullanılıyorsa, bir sonraki numarayı dene
-            if ($exists) {
-                $nextNumber++;
-                $memberNo = 'Mitglied' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-                $exists = Member::where('member_no', $memberNo)->exists();
+            // Bu numaranın kullanılıp kullanılmadığını kontrol et (silinen dahil - tekrar kullanılmasın)
+            // Silinen üyelerin numaralarını tekrar kullanmıyoruz (veri bütünlüğü ve DSGVO uyumluluğu için)
+            $exists = Member::withTrashed()->where('member_no', $memberNo)->exists();
+            
+            // Force delete edilen üyelerin numaralarını da kontrol et (AccessLog snapshot'larından)
+            $forceDeleted = false;
+            if (!$exists) {
+                $forceDeleted = \App\Models\AccessLog::where('action', 'force_delete')
+                    ->whereNotNull('details')
+                    ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($memberNo)])
+                    ->exists();
             }
 
-        } while ($exists);
+            // Eğer numara kullanılabilir değilse (exists veya forceDeleted), bir sonraki numarayı dene
+            if ($exists || $forceDeleted) {
+                $nextNumber++;
+            }
+
+        } while ($exists || $forceDeleted);
 
         return $memberNo;
     }

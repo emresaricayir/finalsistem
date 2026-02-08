@@ -17,7 +17,10 @@ class AccessLogController extends Controller
         if (!auth()->user()->isSuperAdmin()) {
             abort(403, 'Bu sayfaya erişim yetkiniz yok.');
         }
-        $query = AccessLog::with(['member', 'user'])
+        // Silinmiş üyeleri de yükle (withTrashed)
+        $query = AccessLog::with(['member' => function($query) {
+            $query->withTrashed();
+        }, 'user'])
             ->orderByDesc('created_at');
 
         // Filter by member
@@ -46,8 +49,8 @@ class AccessLogController extends Controller
 
         $logs = $query->paginate(50)->withQueryString();
 
-        // Get members and users for filters
-        $members = Member::orderBy('surname')->orderBy('name')->get(['id', 'name', 'surname']);
+        // Get members and users for filters (silinmiş üyeleri de dahil et)
+        $members = Member::withTrashed()->orderBy('surname')->orderBy('name')->get(['id', 'name', 'surname', 'member_no', 'deleted_at']);
         $users = \App\Models\User::orderBy('name')->get(['id', 'name', 'email']);
 
         return view('admin.access-logs.index', compact('logs', 'members', 'users'));
