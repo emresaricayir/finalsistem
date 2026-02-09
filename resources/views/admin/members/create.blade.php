@@ -36,7 +36,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-600"></i>Adı / Vorname *
+                            <i class="fas fa-user mr-2 text-blue-600"></i>Vorname *
                         </label>
                         <input type="text" name="name" id="name" value="{{ old('name') }}" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -47,7 +47,7 @@
 
                     <div>
                         <label for="surname" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-600"></i>Soyadı / Nachname *
+                            <i class="fas fa-user mr-2 text-blue-600"></i>Nachname *
                         </label>
                         <input type="text" name="surname" id="surname" value="{{ old('surname') }}" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -58,13 +58,13 @@
 
                     <div>
                         <label for="gender" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-venus-mars mr-2 text-blue-600"></i>Cinsiyet / Geschlecht
+                            <i class="fas fa-venus-mars mr-2 text-blue-600"></i>Geschlecht
                         </label>
                         <select name="gender" id="gender"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                            <option value="">Seçiniz / Bitte wählen</option>
-                            <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Erkek / Männlich</option>
-                            <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Kadın / Weiblich</option>
+                            <option value="">Bitte wählen</option>
+                            <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Männlich</option>
+                            <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Weiblich</option>
                         </select>
                         @error('gender')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -73,7 +73,7 @@
 
                     <div>
                         <label for="birth_date" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-calendar mr-2 text-blue-600"></i>Doğum Tarihi / Geburtsdatum *
+                            <i class="fas fa-calendar mr-2 text-blue-600"></i>Geburtsdatum *
                         </label>
                         <input type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -84,7 +84,7 @@
 
                     <div>
                         <label for="birth_place" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>Doğum Yeri / Geburtsort
+                            <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>Geburtsort
                         </label>
                         <input type="text" name="birth_place" id="birth_place" value="{{ old('birth_place') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -95,7 +95,7 @@
 
                     <div>
                         <label for="nationality" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-flag mr-2 text-blue-600"></i>Uyruğu / Staatsangehörigkeit
+                            <i class="fas fa-flag mr-2 text-blue-600"></i>Staatsangehörigkeit
                         </label>
                         <input type="text" name="nationality" id="nationality" value="{{ old('nationality') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -106,7 +106,7 @@
 
                     <div>
                         <label for="occupation" class="block text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-briefcase mr-2 text-blue-600"></i>Mesleği / Beruf
+                            <i class="fas fa-briefcase mr-2 text-blue-600"></i>Beruf
                         </label>
                         <input type="text" name="occupation" id="occupation" value="{{ old('occupation') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
@@ -140,7 +140,7 @@
 
                 <div class="mt-6">
                     <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-home mr-2 text-blue-600"></i>Adres / Anschrift *
+                        <i class="fas fa-home mr-2 text-blue-600"></i>Anschrift *
                     </label>
                     <textarea name="address" id="address" rows="3" required
                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">{{ old('address') }}</textarea>
@@ -234,6 +234,34 @@
                     @error('notes')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- DSGVO Veri İşleme Onayı -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex items-start">
+                        <div class="w-6 h-6 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                            <i class="fas fa-lock text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3">
+                                🔒 Datenverarbeitungszustimmung
+                            </h4>
+                            <p class="text-sm text-gray-600 mb-4">
+                                DSGVO gereği kişisel verilerinizin işlenmesi için onayınız gerekmektedir.
+                            </p>
+                            <div class="flex items-start">
+                                <input type="checkbox" name="privacy_consent" id="privacy_consent" value="1" required
+                                       class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                       {{ old('privacy_consent') ? 'checked' : '' }}>
+                                <label for="privacy_consent" class="ml-3 text-sm text-gray-700">
+                                    Ich habe die <a href="/sayfa/datenschutz" target="_blank" class="text-blue-600 hover:text-blue-800 underline font-medium">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu. <span class="text-red-600 font-semibold">*</span>
+                                </label>
+                            </div>
+                            @error('privacy_consent')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -231,7 +231,7 @@
                 PDF İndir
             </a>
 
-            <a href="{{ route('member.dashboard') }}"
+            <a href="{{ route('member.profile') }}"
                class="inline-flex items-center justify-center px-8 py-4 bg-gray-600 text-white font-semibold rounded-xl hover:bg-gray-700 transition-colors shadow-lg hover:shadow-xl">
                 <i class="fas fa-arrow-left mr-3"></i>
                 Ana Sayfaya Dön

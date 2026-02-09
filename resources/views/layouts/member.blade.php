@@ -208,11 +208,6 @@
 
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex flex-row gap-3 md:gap-8 py-6">
-                <a href="{{ route('member.dashboard') }}"
-                   class="@if(request()->routeIs('member.dashboard')) bg-teal-500/30 text-white border-b-2 border-teal-400 shadow-lg @else text-teal-100 hover:text-white hover:bg-white/10 hover:shadow-lg @endif pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
-                    <i class="fas fa-home mr-2"></i>
-                    {{ __('common.member_dashboard') }}
-                </a>
                 <a href="{{ route('member.profile') }}"
                    class="@if(request()->routeIs('member.profile')) bg-teal-500/30 text-white border-b-2 border-teal-400 shadow-lg @else text-teal-100 hover:text-white hover:bg-white/10 hover:shadow-lg @endif pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                     <i class="fas fa-user mr-2"></i>
@@ -235,11 +230,6 @@
             <!-- Mobile Navigation Menu -->
             <div id="mobile-menu" class="hidden lg:hidden pb-4">
                 <nav class="flex flex-col space-y-2">
-                    <a href="{{ route('member.dashboard') }}"
-                       class="@if(request()->routeIs('member.dashboard')) bg-teal-500/30 text-white border-l-4 border-teal-400 @else text-teal-100 hover:text-white hover:bg-white/10 @endif px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
-                        <i class="fas fa-home mr-3 text-base"></i>
-                        {{ __('common.member_dashboard') }}
-                    </a>
                     <a href="{{ route('member.profile') }}"
                        class="@if(request()->routeIs('member.profile')) bg-teal-500/30 text-white border-l-4 border-teal-400 @else text-teal-100 hover:text-white hover:bg-white/10 @endif px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-user mr-3 text-base"></i>

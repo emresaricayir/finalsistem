@@ -247,31 +247,17 @@
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                                     <div class="flex items-center text-xs sm:text-sm text-gray-500">
                                         <i class="fas fa-calendar mr-2"></i>
-                                        <span>{{ $news->created_at->format('d M Y, H:i') }}</span>
+                                        <span>{{ $news->published_at ? $news->published_at->formatTr('d F Y, H:i') : $news->created_at->formatTr('d F Y, H:i') }}</span>
                                         <span class="mx-2">•</span>
                                         <i class="fas fa-eye mr-1"></i>
                                         <span>{{ rand(50, 200) }} {{ __('common.read_count') }}</span>
                                     </div>
 
-                                    <!-- Share Buttons -->
-                                    <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto">
-                                        <button onclick="shareNews('facebook')" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="Facebook'ta Paylaş">
-                                            <i class="fab fa-facebook-f text-xs sm:text-sm"></i>
-                                        </button>
-                                        <button onclick="shareNews('twitter')" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-sky-500 hover:bg-sky-600 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="Twitter'da Paylaş">
-                                            <i class="fab fa-twitter text-xs sm:text-sm"></i>
-                                        </button>
-                                        <button onclick="shareNews('whatsapp')" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="WhatsApp'ta Paylaş">
-                                            <i class="fab fa-whatsapp text-xs sm:text-sm"></i>
-                                        </button>
-                                        <button onclick="shareNews('telegram')" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="Telegram'da Paylaş">
-                                            <i class="fab fa-telegram text-xs sm:text-sm"></i>
-                                        </button>
-                                        <button onclick="shareNews('linkedin')" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-blue-700 hover:bg-blue-800 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="LinkedIn'de Paylaş">
-                                            <i class="fab fa-linkedin-in text-xs sm:text-sm"></i>
-                                        </button>
-                                        <button onclick="copyLink()" class="share-btn w-8 h-8 sm:w-10 sm:h-10 bg-gray-600 hover:bg-gray-700 text-white rounded-lg flex items-center justify-center flex-shrink-0" title="Linki Kopyala">
-                                            <i class="fas fa-link text-xs sm:text-sm"></i>
+                                    <!-- Share Button -->
+                                    <div class="flex items-center">
+                                        <button onclick="shareNews()" class="share-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors" title="Paylaş">
+                                            <i class="fas fa-share-alt"></i>
+                                            <span>{{ __('common.share') }}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -333,54 +319,43 @@
     <script>
         // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
-            function shareNews(platform) {
-                const title = {!! json_encode($news->title, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
+            function shareNews() {
+                // PHP tarafında HTML entity'leri decode et
+                @php
+                    $cleanTitle = html_entity_decode($news->title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                    $cleanDescription = html_entity_decode(Str::limit(strip_tags($news->content), 100), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                @endphp
+                
+                const title = {!! json_encode($cleanTitle, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!};
+                const description = {!! json_encode($cleanDescription, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!};
                 const url = window.location.href;
-                const description = {!! json_encode(Str::limit(strip_tags($news->content), 100), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
-                const text = `📰 ${title}\n\n${description}\n\nDetaylı bilgi için: ${url}`;
 
-                let shareUrl = '';
-
-                switch(platform) {
-                    case 'facebook':
-                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`;
-                        break;
-                    case 'twitter':
-                        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}&url=${encodeURIComponent(url)}&hashtags=haber,{{ str_replace(' ', '', $orgName) }}`;
-                        break;
-                    case 'whatsapp':
-                        shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                        break;
-                    case 'telegram':
-                        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`📰 ${title}\n\n${description}`)}`;
-                        break;
-                    case 'linkedin':
-                        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-                        break;
-                    default:
-                        // Native share or copy to clipboard
-                        if (navigator.share) {
-                            navigator.share({
-                                title: title,
-                                text: description,
-                                url: url
-                            }).catch(console.error);
-                            return;
-                        } else {
+                // Native Share API kullan (tüm paylaşım seçeneklerini gösterir)
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: description,
+                        url: url
+                    }).then(() => {
+                        // Paylaşım başarılı
+                    }).catch((error) => {
+                        // Kullanıcı paylaşımı iptal etti veya hata oluştu
+                        if (error.name !== 'AbortError') {
+                            console.error('Paylaşım hatası:', error);
+                            // Fallback: Linki kopyala
                             copyLink();
-                            return;
                         }
-                }
-
-                if (shareUrl) {
-                    window.open(shareUrl, '_blank', 'width=600,height=400');
+                    });
+                } else {
+                    // Native Share API desteklenmiyorsa linki kopyala
+                    copyLink();
                 }
             }
 
             function copyLink() {
                 const url = window.location.href;
                 navigator.clipboard.writeText(url).then(() => {
-                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}, 'success');
+                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}, 'success');
                 }).catch(() => {
                     // Fallback for older browsers
                     const textArea = document.createElement('textarea');
@@ -389,7 +364,7 @@
                     textArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
-                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}, 'success');
+                    showToast({!! json_encode(__('common.link_copied'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}, 'success');
                 });
             }
 

@@ -582,13 +582,13 @@ class MemberApplicationController extends Controller
 
         // Lock ile en yüksek mevcut üye numarasını bul (race condition'ı önlemek için)
         // Tüm Mitglied numaralarını lock'la (silinen dahil - tekrar kullanılmasın)
-        DB::table('members')
+        Member::withTrashed()
             ->where('member_no', 'LIKE', 'Mitglied%')
             ->lockForUpdate()
             ->get();
         
         // En yüksek numarayı bul (silinen dahil - tekrar kullanılmasın)
-        $lastMember = DB::table('members')
+        $lastMember = Member::withTrashed()
             ->where('member_no', 'LIKE', 'Mitglied%')
             ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
             ->first();
@@ -619,9 +619,10 @@ class MemberApplicationController extends Controller
             // Force delete edilen üyelerin numaralarını da kontrol et (AccessLog snapshot'larından)
             $forceDeleted = false;
             if (!$exists) {
+                // Laravel'in native JSON where clause'unu kullan (daha güvenilir)
                 $forceDeleted = \App\Models\AccessLog::where('action', 'force_delete')
                     ->whereNotNull('details')
-                    ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($memberNo)])
+                    ->where('details->member_snapshot->member_no', $memberNo)
                     ->exists();
             }
 

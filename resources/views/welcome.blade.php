@@ -92,7 +92,7 @@
             $address = \App\Models\Settings::get('organization_address');
             $website = \App\Models\Settings::get('website');
             $instagram = \App\Models\Settings::get('instagram_url');
-            $news = $recentNews ?? \App\Models\News::where('is_active', true)->orderBy('created_at', 'desc')->limit(8)->get();
+            $news = $recentNews ?? \App\Models\News::where('is_active', true)->orderByRaw('COALESCE(published_at, created_at) DESC')->limit(8)->get();
             $totalNews = \App\Models\News::where('is_active', true)->count();
             $announcements = \App\Models\Announcement::where('is_active', true)->orderBy('created_at', 'desc')->limit(5)->get();
             $totalAnnouncements = \App\Models\Announcement::where('is_active', true)->count();
@@ -694,22 +694,13 @@
                                                         <i class="far fa-calendar-check mr-1.5"></i>
                                                         <span class="text-xs">{{ $event->event_date->diffForHumans() }}</span>
                                                     </div>
-                                                    <!-- Share Buttons -->
-                                                    <div class="flex items-center gap-2">
-                                                        <button onclick="shareEventToWhatsApp({{ $event->id }}, '{{ addslashes($event->title) }}', '{{ $event->event_date->format('d.m.Y H:i') }}', '{{ addslashes($event->location ?? '') }}')" 
-                                                                class="flex items-center justify-center w-7 h-7 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 hover:scale-110" 
-                                                                title="WhatsApp'ta Paylaş">
-                                                            <i class="fab fa-whatsapp text-xs"></i>
-                                                        </button>
-                                                        <button onclick="shareEventToFacebook({{ $event->id }})" 
-                                                                class="flex items-center justify-center w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all duration-200 hover:scale-110" 
-                                                                title="Facebook'ta Paylaş">
-                                                            <i class="fab fa-facebook-f text-xs"></i>
-                                                        </button>
-                                                        <button onclick="shareEventToInstagram({{ $event->id }}, '{{ addslashes($event->title) }}', '{{ $event->event_date->format('d.m.Y H:i') }}', '{{ addslashes($event->location ?? '') }}')" 
-                                                                class="flex items-center justify-center w-7 h-7 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all duration-200 hover:scale-110" 
-                                                                title="Instagram'da Paylaş">
-                                                            <i class="fab fa-instagram text-xs"></i>
+                                                    <!-- Share Button -->
+                                                    <div class="flex items-center">
+                                                        <button onclick="shareEvent({{ $event->id }}, '{{ addslashes(html_entity_decode($event->title, ENT_QUOTES | ENT_HTML5, 'UTF-8')) }}', '{{ $event->event_date->format('d.m.Y H:i') }}', '{{ addslashes(html_entity_decode($event->location ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8')) }}')" 
+                                                                class="flex items-center justify-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 text-xs font-medium gap-1.5" 
+                                                                title="Paylaş">
+                                                            <i class="fas fa-share-alt text-xs"></i>
+                                                            <span>{{ __('common.share') }}</span>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -899,19 +890,19 @@
 
                     <!-- Photo Modal -->
                     <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
-                        <div class="relative max-w-4xl max-h-full">
+                        <div class="relative max-w-4xl max-h-[90vh] w-full">
                             <!-- Close button -->
                             <button onclick="closePhotoModal()"
-                                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors duration-200">
+                                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors duration-200 z-10">
                                 <i class="fas fa-times text-3xl"></i>
                             </button>
 
                             <!-- Photo -->
-                            <img id="modalPhoto" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg">
+                            <img id="modalPhoto" src="" alt="" class="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg mx-auto">
 
                             <!-- Photo title -->
                             <div id="modalPhotoTitle" class="text-white text-center mt-4 text-lg font-medium"></div>
-                    </div>
+                        </div>
                     </div>
 
                     <!-- Video Modal -->
@@ -1575,67 +1566,56 @@
         </style>
 
         <script>
-            // Event Share Functions - Global scope
-            window.shareEventToWhatsApp = function(eventId, title, date, location) {
+            // Event Share Function - Native Share API kullan
+            window.shareEvent = function(eventId, title, date, location) {
                 const url = window.location.origin + '/etkinlikler-liste';
                 const orgName = @json(\App\Models\Settings::get('organization_name', 'Cami Üyelik Sistemi'));
 
-                let text = "*" + title + "*\n\n";
-                text += "Tarih: " + date + "\n";
+                let shareText = title + "\n\n";
+                shareText += "Tarih: " + date + "\n";
                 if (location) {
-                    text += "Konum: " + location + "\n";
+                    shareText += "Konum: " + location + "\n";
                 }
-                text += "\n" + orgName + "\n\n";
-                text += "Detaylı bilgi için: " + url;
+                shareText += "\n" + orgName + "\n\n";
+                shareText += "Detaylı bilgi için: " + url;
 
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                window.open(whatsappUrl, '_blank');
-            };
-
-            window.shareEventToFacebook = function(eventId) {
-                const url = window.location.origin + '/etkinlikler-liste';
-                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-                window.open(facebookUrl, '_blank', 'width=600,height=400');
-            };
-
-            window.shareEventToInstagram = function(eventId, title, date, location) {
-                const url = window.location.origin + '/etkinlikler-liste';
-                
-                let text = title + "\n\n";
-                text += "Tarih: " + date + "\n";
-                if (location) {
-                    text += "Konum: " + location + "\n";
-                }
-                text += "\n" + url;
-
-                // Instagram uygulamasına yönlendir (mobilde)
-                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                    // Mobil cihazda Instagram uygulamasına yönlendir
-                    const instagramUrl = `instagram://story-camera`;
-                    window.location.href = instagramUrl;
-
-                    // Fallback: Instagram web'e yönlendir
-                    setTimeout(() => {
-                        window.open('https://www.instagram.com/', '_blank');
-                    }, 1000);
-                } else {
-                    // Desktop'ta Instagram web'e yönlendir
-                    window.open('https://www.instagram.com/', '_blank');
-                }
-
-                // Metni de kopyala
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        showEventToast('Instagram açıldı, metin kopyalandı!', 'success');
+                // Native Share API kullan (tüm paylaşım seçeneklerini gösterir)
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: shareText,
+                        url: url
+                    }).then(() => {
+                        // Paylaşım başarılı
+                    }).catch((error) => {
+                        // Kullanıcı paylaşımı iptal etti veya hata oluştu
+                        if (error.name !== 'AbortError') {
+                            console.error('Paylaşım hatası:', error);
+                        }
                     });
                 } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showEventToast('Instagram açıldı, metin kopyalandı!', 'success');
+                    // Native Share API desteklenmiyorsa linki kopyala
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(shareText).then(() => {
+                            showEventToast('Metin kopyalandı!', 'success');
+                        }).catch(() => {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = shareText;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            showEventToast('Metin kopyalandı!', 'success');
+                        });
+                    } else {
+                        const textArea = document.createElement('textarea');
+                        textArea.value = shareText;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        showEventToast('Metin kopyalandı!', 'success');
+                    }
                 }
             };
 

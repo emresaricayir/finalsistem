@@ -75,7 +75,7 @@ class MemberAuthController extends Controller
         session(['member_id' => $member->id]);
         session(['member_name' => $member->name . ' ' . $member->surname]);
 
-        return redirect()->route('member.dashboard');
+        return redirect()->route('member.profile');
     }
 
     /**
@@ -353,6 +353,24 @@ class MemberAuthController extends Controller
                 'error' => 'Makbuz oluşturulurken hata oluştu: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Show DSGVO (Data Protection) page
+     */
+    public function dsgvo()
+    {
+        $memberId = session('member_id');
+        if (!$memberId) {
+            return redirect()->route('member.login');
+        }
+
+        $member = Member::findOrFail($memberId);
+        $settings = [
+            'organization_name' => Settings::get('organization_name'),
+        ];
+
+        return view('member.dsgvo', compact('member', 'settings'));
     }
 
     /**

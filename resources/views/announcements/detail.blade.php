@@ -305,16 +305,11 @@
                             <div class="flex items-start justify-between mb-4 header-section">
                                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight flex-1 pr-4 announcement-title">{{ $announcement->title }}</h1>
 
-                                <!-- Social Media Share Buttons -->
-                                <div class="flex gap-2 share-buttons">
-                                    <button onclick="shareToWhatsApp()" class="flex items-center justify-center w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 hover:scale-110 share-btn" title="WhatsApp'ta Paylaş">
-                                        <i class="fab fa-whatsapp text-sm"></i>
-                                    </button>
-                                    <button onclick="shareToFacebook()" class="flex items-center justify-center w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-all duration-200 hover:scale-110 share-btn" title="Facebook'ta Paylaş">
-                                        <i class="fab fa-facebook-f text-sm"></i>
-                                    </button>
-                                    <button onclick="shareToInstagram()" class="flex items-center justify-center w-10 h-10 bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all duration-200 hover:scale-110 share-btn" title="Instagram'da Paylaş">
-                                        <i class="fab fa-instagram text-sm"></i>
+                                <!-- Share Button -->
+                                <div class="flex items-center">
+                                    <button onclick="shareAnnouncement()" class="share-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors" title="Paylaş">
+                                        <i class="fas fa-share-alt"></i>
+                                        <span>{{ __('common.share') }}</span>
                                     </button>
                                 </div>
                             </div>
@@ -470,134 +465,94 @@
     </div>
 
     <script>
-        // Share functions - Global scope'a ekle
-        window.shareToWhatsApp = function() {
+        // Share function - Native Share API kullan
+        function shareAnnouncement() {
+            // PHP tarafında HTML entity'leri decode et
+            @php
+                $cleanTitle = html_entity_decode($announcement->title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $cleanContent = html_entity_decode(Str::limit(strip_tags($announcement->content ?? ''), 100), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            @endphp
+            
+            const title = {!! json_encode($cleanTitle, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!};
+            const text = {!! json_encode($cleanContent, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!};
             const url = window.location.href;
-            const title = @json($announcement->title);
-            const content = @json(Str::limit(strip_tags($announcement->content ?? ''), 200));
-            const orgName = @json($orgName);
-            const date = @json($announcement->created_at->format('d.m.Y'));
 
-            let text = "*" + title + "*\n\n";
-
-            @if($announcement->content && trim($announcement->content))
-            text += content;
-            @if(strlen(strip_tags($announcement->content)) > 200)
-            text += "...";
-            @endif
-            text += "\n\n";
-            @endif
-
-            text += "Tarih: " + date + "\n";
-            text += orgName + "\n\n";
-            text += "Detaylı bilgi için: " + url;
-
-            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(whatsappUrl, '_blank');
-        };
-
-        window.shareToFacebook = function() {
-            const url = window.location.href;
-            const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-            window.open(facebookUrl, '_blank', 'width=600,height=400');
-        };
-
-        window.shareToInstagram = function() {
-            const url = window.location.href;
-            const title = @json($announcement->title);
-            const content = @json(Str::limit(strip_tags($announcement->content ?? ''), 100));
-
-            let text = title + "\n\n";
-            @if($announcement->content && trim($announcement->content))
-            text += content;
-            @if(strlen(strip_tags($announcement->content)) > 100)
-            text += "...";
-            @endif
-            text += "\n\n";
-            @endif
-            text += url;
-
-            // Instagram uygulamasına yönlendir (mobilde)
-            if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                // Mobil cihazda Instagram uygulamasına yönlendir
-                const instagramUrl = `instagram://story-camera`;
-                window.location.href = instagramUrl;
-
-                // Fallback: Instagram web'e yönlendir
-                setTimeout(() => {
-                    window.open('https://www.instagram.com/', '_blank');
-                }, 1000);
-            } else {
-                // Desktop'ta Instagram web'e yönlendir
-                window.open('https://www.instagram.com/', '_blank');
-            }
-
-            // Metni de kopyala
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    window.showToast('Instagram açıldı, metin kopyalandı!', 'success');
+            // Native Share API kullan (tüm paylaşım seçeneklerini gösterir)
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                }).then(() => {
+                    // Paylaşım başarılı
+                }).catch((error) => {
+                    // Kullanıcı paylaşımı iptal etti veya hata oluştu
+                    if (error.name !== 'AbortError') {
+                        console.error('Paylaşım hatası:', error);
+                        // Fallback: Linki kopyala
+                        copyAnnouncementLink();
+                    }
                 });
             } else {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                window.showToast('Instagram açıldı, metin kopyalandı!', 'success');
+                // Native Share API desteklenmiyorsa linki kopyala
+                copyAnnouncementLink();
             }
-        };
+        }
 
-        window.copyLink = function() {
+        // Link kopyalama fonksiyonu
+        function copyAnnouncementLink() {
             const url = window.location.href;
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(url).then(() => {
-                    window.showToast('Link kopyalandı!', 'success');
+                    showToast('Link kopyalandı!', 'success');
+                }).catch(() => {
+                    // Fallback
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showToast('Link kopyalandı!', 'success');
                 });
             } else {
-                // Fallback for older browsers
+                // Fallback
                 const textArea = document.createElement('textarea');
                 textArea.value = url;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                window.showToast('Link kopyalandı!', 'success');
+                showToast('Link kopyalandı!', 'success');
             }
-        };
+        }
 
-        window.showToast = function(message, type = 'info') {
+        // Toast mesaj fonksiyonu
+        function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full flex items-center space-x-2`;
-
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+            
             if (type === 'success') {
                 toast.className += ' bg-green-500';
-                toast.innerHTML = `<i class="fas fa-check-circle"></i><span>${message}</span>`;
-            } else if (type === 'error') {
-                toast.className += ' bg-red-500';
-                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
             } else {
                 toast.className += ' bg-blue-500';
-                toast.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
             }
-
+            
+            toast.textContent = message;
             document.body.appendChild(toast);
-
-            // Animate in
+            
             setTimeout(() => {
                 toast.classList.remove('translate-x-full');
             }, 100);
-
-            // Animate out and remove
+            
             setTimeout(() => {
                 toast.classList.add('translate-x-full');
                 setTimeout(() => {
-                    if (document.body.contains(toast)) {
-                        document.body.removeChild(toast);
-                    }
+                    document.body.removeChild(toast);
                 }, 300);
             }, 3000);
         }
+
 
         // Image Modal functions
         window.openImageModal = function(imageSrc, title) {

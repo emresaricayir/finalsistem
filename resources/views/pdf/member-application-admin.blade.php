@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Üyelik Başvuru Formu - {{ $member->member_no }}</title>
+    <title>Mitgliedschaftsantrag - {{ $member->member_no }}</title>
 
     <style>
         /* ====== Base ====== */
@@ -274,20 +274,20 @@
 <body>
     <!-- Floating Buttons -->
     <div class="print-buttons">
-        <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
-        <a href="{{ route('admin.dashboard') }}" class="print-btn" style="background:#0ea5e9">🏠 Ana Sayfa</a>
+        <button class="print-btn" onclick="window.print()">🖨️ Drucken</button>
+        <a href="{{ route('admin.dashboard') }}" class="print-btn" style="background:#0ea5e9">🏠 Startseite</a>
     </div>
 
     <div class="application-container">
         <!-- Header -->
         <div class="header">
-            <div class="header-top">
+            <div class="header-top" style="flex-direction: column; align-items: center; gap: 8px;">
                 @if(\App\Models\Settings::hasLogo())
                     <img src="{{ asset('storage/' . \App\Models\Settings::get('logo')) }}" class="logo" alt="Logo">
                 @endif
-                <div>
-                    <div class="organization-name">{{ $settings['organization_name'] }}</div>
-                    <div class="application-title">Üyelik Başvuru Formu / Mitgliedschaftsantrag</div>
+                <div style="text-align: center;">
+                    <div class="organization-name">{{ $settings['organization_subtitle'] ?? $settings['organization_name'] }}</div>
+                    <div class="application-title">Mitgliedschaftsantrag</div>
                 </div>
             </div>
         </div>
@@ -296,46 +296,46 @@
          <div class="two-col" style="margin-bottom:6px;">
              <!-- Kişisel Bilgiler -->
              <div class="section section-personal" style="margin-bottom:0;">
-                 <div class="section-title">Kişisel Bilgiler / Persönliche Daten</div>
+                 <div class="section-title">Persönliche Daten</div>
                 <div class="info-grid">
                     <div class="info-row">
-                        <div class="info-label">Ad Soyad / Name</div>
+                        <div class="info-label">Name</div>
                         <div class="info-value">{{ $member->name }} {{ $member->surname }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Doğum Tarihi / Geburtsdatum</div>
-                        <div class="info-value">{{ $member->birth_date ? $member->birth_date->format('d.m.Y') : 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Geburtsdatum</div>
+                        <div class="info-value">{{ $member->birth_date ? $member->birth_date->format('d.m.Y') : 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Doğum Yeri / Geburtsort</div>
-                        <div class="info-value">{{ $member->birth_place ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Geburtsort</div>
+                        <div class="info-value">{{ $member->birth_place ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Uyruk / Staatsangehörigkeit</div>
-                        <div class="info-value">{{ $member->nationality ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Staatsangehörigkeit</div>
+                        <div class="info-value">{{ $member->nationality ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Meslek / Beruf</div>
-                        <div class="info-value">{{ $member->occupation ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Beruf</div>
+                        <div class="info-value">{{ $member->occupation ?? 'Nicht angegeben' }}</div>
                     </div>
                 </div>
             </div>
 
                          <!-- İletişim Bilgileri -->
              <div class="section section-contact" style="margin-bottom:0;">
-                 <div class="section-title">İletişim Bilgileri / Kontaktdaten</div>
+                 <div class="section-title">Kontaktdaten</div>
                 <div class="info-grid">
                     <div class="info-row">
-                        <div class="info-label">E-posta / E-Mail</div>
+                        <div class="info-label">E-Mail</div>
                         <div class="info-value">{{ $member->email }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Telefon / Telefon</div>
-                        <div class="info-value">{{ $member->phone ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Telefon</div>
+                        <div class="info-value">{{ $member->phone ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Adres / Adresse</div>
-                        <div class="info-value">{{ $member->address ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Adresse</div>
+                        <div class="info-value">{{ $member->address ?? 'Nicht angegeben' }}</div>
                     </div>
                 </div>
             </div>
@@ -345,80 +345,70 @@
          <div class="two-col">
              <!-- Üyelik Bilgileri -->
              <div class="section section-membership" style="margin-bottom:0;">
-                 <div class="section-title">Üyelik Bilgileri / Mitgliedschaftsdaten</div>
+                 <div class="section-title">Mitgliedschaftsdaten</div>
                 <div class="info-grid">
                     <div class="info-row">
-                        <div class="info-label">Başvuru Tarihi / Antragsdatum</div>
+                        <div class="info-label">Antragsdatum</div>
                         <div class="info-value">
                             @php $appDate = $member->application_date ?? $member->membership_date; @endphp
-                            {{ $appDate ? $appDate->format('d.m.Y') : 'Belirtilmemiş' }}
+                            {{ $appDate ? $appDate->format('d.m.Y') : 'Nicht angegeben' }}
                         </div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Aylık Aidat / Monatsbeitrag</div>
+                        <div class="info-label">Monatsbeitrag</div>
                         <div class="info-value">{{ number_format($member->monthly_dues, 2) }} €</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Ödeme Yöntemi / Zahlungsmethode</div>
+                        <div class="info-label">Zahlungsmethode</div>
                         <div class="info-value">
                             @switch($member->payment_method)
-                                @case('cash') Nakit / Bar @break
-                                @case('bank_transfer') Banka Havalesi / Banküberweisung @break
+                                @case('cash') Bar @break
+                                @case('bank_transfer') Banküberweisung @break
                                 @case('direct_debit') Lastschrift @break
                                 @case('standing_order') Dauerauftrag @break
-                                @case('lastschrift_monthly') Lastschrift (Aylık) / Lastschrift (Monatlich) @break
-                                @case('lastschrift_semi_annual') Lastschrift (6 Aylık) / Lastschrift (Halbjährlich) @break
-                                @case('lastschrift_annual') Lastschrift (Yıllık) / Lastschrift (Jährlich) @break
-                                @default Belirtilmemiş
+                                @case('lastschrift_monthly') Lastschrift (Monatlich) @break
+                                @case('lastschrift_semi_annual') Lastschrift (Halbjährlich) @break
+                                @case('lastschrift_annual') Lastschrift (Jährlich) @break
+                                @default Nicht angegeben
                             @endswitch
                         </div>
                     </div>
                 </div>
             </div>
 
-                         <!-- Banka Bilgileri -->
-             @if($member->payment_method !== 'cash')
+                         <!-- Banka Bilgileri - Sadece Lastschrift için göster -->
+             @if(in_array($member->payment_method, ['lastschrift_monthly', 'lastschrift_semi_annual', 'lastschrift_annual', 'direct_debit']))
              <div class="section section-bank" style="margin-bottom:0;">
-                 <div class="section-title">Banka Bilgileri / Bankdaten</div>
+                 <div class="section-title">Bankdaten</div>
                 <div class="info-grid">
                     <div class="info-row">
-                        <div class="info-label">Hesap Sahibi / Kontoinhaber</div>
-                        <div class="info-value">{{ $member->account_holder ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Kontoinhaber</div>
+                        <div class="info-value">{{ $member->account_holder ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Banka Adı / Bankname</div>
-                        <div class="info-value">{{ $member->bank_name ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-label">Bankname</div>
+                        <div class="info-value">{{ $member->bank_name ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">IBAN</div>
-                        <div class="info-value">{{ $member->iban ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-value">{{ $member->iban ?? 'Nicht angegeben' }}</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">BIC</div>
-                        <div class="info-value">{{ $member->bic ?? 'Belirtilmemiş' }}</div>
+                        <div class="info-value">{{ $member->bic ?? 'Nicht angegeben' }}</div>
                     </div>
                     @if($member->mandate_number)
                     <div class="info-row">
-                        <div class="info-label">Mandat No / Mandatsreferenz</div>
+                        <div class="info-label">Mandatsreferenz</div>
                         <div class="info-value">{{ $member->mandate_number }}</div>
                     </div>
                     @endif
                     @if($member->payment_due_date)
                     <div class="info-row">
-                        <div class="info-label">Ödeme Tarihi / Zahlungstermin</div>
+                        <div class="info-label">Zahlungstermin</div>
                         <div class="info-value">{{ $member->payment_due_date->format('d.m.Y') }}</div>
                     </div>
                     @endif
-                </div>
-            </div>
-                         @else
-             <div class="section section-bank" style="margin-bottom:0;">
-                 <div class="section-title">Banka Bilgileri / Bankdaten</div>
-                <div class="info-grid">
-                    <div class="info-row">
-                        <div class="info-label">Bilgi</div>
-                        <div class="info-value">Ödeme yöntemi nakit olduğundan banka bilgisi bulunmamaktadır.</div>
-                    </div>
                 </div>
             </div>
             @endif
@@ -427,11 +417,10 @@
         <!-- SEPA Onay -->
         @if($member->sepa_agreement)
         <div class="section">
-            <div class="section-title">SEPA-Lastschriftmandat Onayı / SEPA-Lastschriftmandat Zustimmung</div>
+            <div class="section-title">SEPA-Lastschriftmandat Zustimmung</div>
             <div class="digital-signature">
                 <div class="declaration-text">
-                    <p><strong>SEPA-Lastschriftmandat:</strong> Yukarıdaki SEPA-Lastschriftmandat metnini okudum, anladım ve kabul ediyorum. Otomatik ödeme talimatını veriyorum.</p>
-                    <p><em><strong>SEPA-Lastschriftmandat:</strong> Ich habe den obigen SEPA-Lastschriftmandat Text gelesen, verstanden und akzeptiere ihn. Ich erteile die Ermächtigung zum Einzug von Forderungen.</em></p>
+                    <p><strong>SEPA-Lastschriftmandat:</strong> Ich habe den obigen SEPA-Lastschriftmandat Text gelesen, verstanden und akzeptiere ihn. Ich erteile die Ermächtigung zum Einzug von Forderungen.</p>
                 </div>
             </div>
         </div>
@@ -440,15 +429,14 @@
         <!-- Beyan ve Dijital İmza -->
         @if($member->signature)
         <div class="section">
-            <div class="section-title">Beyan ve Dijital İmza / Erklärung und Digitale Unterschrift</div>
+            <div class="section-title">Erklärung und Digitale Unterschrift</div>
             <div class="digital-signature">
                 <div class="declaration-text">
-                    <p>Topluluğunuzun tüzüğünü okudum ve yönetim kurulunun içindeki kararları kabul ettiğimi beyan ediyorum ve üyelik aidatını ödemeyi taahhüt ederek üyelik başvurusunda bulunuyorum. Ayrıca, ne yurt içinde ne de yurt dışında sabıkalı olmadığımı beyan ederim.</p>
-                    <p><em>Ich habe die Satzung Ihrer Gemeinde gelesen und erkläre hiermit mein Einverständnis zu den darin befindlichen Beschlüssen des Vorstandes und verpflichte mich den Mitgliedsbeitrag zu zahlen und beantrage somit die Mitgliedschaft. Des Weiteren versichere ich, dass ich weder im In- noch im Ausland vorbestraft bin.</em></p>
+                    <p>Ich habe die Satzung Ihrer Gemeinde gelesen und erkläre hiermit mein Einverständnis zu den darin befindlichen Beschlüssen des Vorstandes und verpflichte mich den Mitgliedsbeitrag zu zahlen und beantrage somit die Mitgliedschaft. Des Weiteren versichere ich, dass ich weder im In- noch im Ausland vorbestraft bin.</p>
                 </div>
                 <div class="signature-image">
-                    <img src="{{ $member->signature }}" alt="Dijital İmza" />
-                    <div class="signature-date-digital">{{ $member->signature_date ? $member->signature_date->format('d.m.Y H:i') : 'Belirtilmemiş' }}</div>
+                    <img src="{{ $member->signature }}" alt="Digitale Unterschrift" />
+                    <div class="signature-date-digital">{{ $member->signature_date ? $member->signature_date->format('d.m.Y H:i') : 'Nicht angegeben' }}</div>
                 </div>
             </div>
         </div>
@@ -457,42 +445,63 @@
         <!-- Onay İmzaları - Sadece Admin Panelinde Göster -->
         @if(auth()->check() && auth()->user()->hasAnyRole(['super_admin', 'admin', 'accountant']))
         <div class="signature-section">
-            <div class="signature-title">ÜYELİĞİNİZ YÖNETİM KURULUMUZUN KARARI İLE ONAYLANMIŞTIR</div>
-            <div class="signature-subtitle">Ihre Mitgliedschaft wurde durch Beschluss unseres Vorstands genehmigt</div>
-            <div class="signature-title" style="margin-top:10px;">Onay İmzaları / Bestätigungsunterschriften</div>
+            <div class="signature-title">
+                Ihre Mitgliedschaft wurde durch Beschluss unseres Vorstands genehmigt
+                @php
+                    $approvalDate = $member->approved_at ?? $member->membership_date;
+                @endphp
+                @if($approvalDate)
+                    <span style="font-size:10px; font-weight:600; color:#6b7280; display:block; margin-top:4px;">
+                        Genehmigungsdatum: {{ $approvalDate->format('d.m.Y') }}
+                    </span>
+                @endif
+            </div>
+            
+            @if($member->privacy_consent && $member->privacy_consent_date)
+            <div style="margin-top:15px; padding:10px; background-color:#f0f9ff; border-left:3px solid #0d9488; border-radius:4px;">
+                <div style="font-size:11px; line-height:1.5; color:#1f2937;">
+                    <strong style="color:#0d9488;">🔒 Datenverarbeitungszustimmung:</strong><br>
+                    <span style="margin-top:5px; display:block;">
+                        Die Zustimmung zur Verarbeitung personenbezogener Daten wurde erteilt. Zustimmungsdatum: {{ $member->privacy_consent_date->format('d.m.Y') }}
+                    </span>
+                </div>
+            </div>
+            @endif
+            
+            <div class="signature-title" style="margin-top:15px;">Bestätigungsunterschriften</div>
 
             <div class="signature-grid">
                 <div class="signature-item">
                     <div class="signature-name">
-                        Sekreter (Sekretär)<br>
-                        <strong>{{ $settings['pdf_secretary_name'] ?? 'Sekreter Adı' }}</strong>
+                        Sekretär<br>
+                        <strong>{{ $settings['pdf_secretary_name'] ?? 'Sekretär Name' }}</strong>
                     </div>
                     <div class="signature-box"></div>
-                    <div class="signature-date">Tarih ve İmza</div>
+                    <div class="signature-date">Datum und Unterschrift</div>
                 </div>
                 <div class="signature-item">
                     <div class="signature-name">
-                        Muhasip (Kassenwart)<br>
-                        <strong>{{ $settings['pdf_accountant_name'] ?? 'Muhasip Adı' }}</strong>
+                        Kassenwart<br>
+                        <strong>{{ $settings['pdf_accountant_name'] ?? 'Kassenwart Name' }}</strong>
                     </div>
                     <div class="signature-box"></div>
-                    <div class="signature-date">Tarih ve İmza</div>
+                    <div class="signature-date">Datum und Unterschrift</div>
                 </div>
                 <div class="signature-item">
                     <div class="signature-name">
-                        Başkan Yrd. (Stellvertretender Vorsitzender)<br>
-                        <strong>{{ $settings['pdf_vice_president_name'] ?? 'Başkan Yardımcısı Adı' }}</strong>
+                        Stellvertretender Vorsitzender<br>
+                        <strong>{{ $settings['pdf_vice_president_name'] ?? 'Stellvertretender Vorsitzender Name' }}</strong>
                     </div>
                     <div class="signature-box"></div>
-                    <div class="signature-date">Tarih ve İmza</div>
+                    <div class="signature-date">Datum und Unterschrift</div>
                 </div>
                 <div class="signature-item">
                     <div class="signature-name">
-                        Başkan (Vereinsvorsitzender)<br>
-                        <strong>{{ $settings['pdf_president_name'] ?? 'Başkan Adı' }}</strong>
+                        Vereinsvorsitzender<br>
+                        <strong>{{ $settings['pdf_president_name'] ?? 'Vereinsvorsitzender Name' }}</strong>
                     </div>
                     <div class="signature-box"></div>
-                    <div class="signature-date">Tarih ve İmza</div>
+                    <div class="signature-date">Datum und Unterschrift</div>
                 </div>
             </div>
         </div>
@@ -503,13 +512,13 @@
             <div style="margin-bottom:5px;"><strong>{{ $settings['organization_name'] }}</strong></div>
             <div>
                 @if($settings['organization_address'])
-                    <strong>Adres:</strong> {{ $settings['organization_address'] }}
+                    <strong>Anschrift:</strong> {{ $settings['organization_address'] }}
                 @endif
                 @if($settings['organization_phone'])
                     | <strong>Tel:</strong> {{ $settings['organization_phone'] }}
                 @endif
                 @if($settings['organization_email'])
-                    | <strong>E-posta:</strong> {{ $settings['organization_email'] }}
+                    | <strong>E-Mail:</strong> {{ $settings['organization_email'] }}
                 @endif
             </div>
         </div>

@@ -390,11 +390,12 @@ Route::post('/sifre-olustur', [App\Http\Controllers\MemberPasswordSetupControlle
 
 // Member Panel Routes (require member session)
 Route::middleware('member.auth')->prefix('uye-panel')->name('member.')->group(function () {
-    Route::get('/', [MemberAuthController::class, 'dashboard'])->name('dashboard');
+    Route::get('/', [MemberAuthController::class, 'profile'])->name('dashboard');
     Route::get('/profil', [MemberAuthController::class, 'profile'])->name('profile');
     Route::put('/profil', [MemberAuthController::class, 'updateProfile'])->name('profile.update');
     Route::get('/odemelerim', [MemberAuthController::class, 'payments'])->name('payments');
     Route::get('/iletisim-bagis', [MemberAuthController::class, 'contact'])->name('contact');
+    Route::get('/dsgvo', [MemberAuthController::class, 'dsgvo'])->name('dsgvo');
     Route::get('/uye-belgesi', [MemberAuthController::class, 'generateCertificate'])->name('certificate');
     Route::get('/makbuz/{payment}', [MemberAuthController::class, 'generateReceipt'])->name('receipt');
     Route::get('/basvuru-formu', [MemberAuthController::class, 'viewApplication'])->name('application.view');

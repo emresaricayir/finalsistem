@@ -33,6 +33,7 @@ return [
     'news_detail' => 'Haber Detayı',
     'related_news' => 'İlgili Haberler',
     'read_count' => 'Okunma',
+    'updated_at' => 'Güncellendi',
     
     // Announcements
     'announcement_detail' => 'Duyuru Detayı',
@@ -546,4 +547,8 @@ return [
     'consent_withdrawal_info_desc' => 'Rızanızı geri çekmeniz durumunda, verilerinizin işlenmesi için yasal bir dayanak olmadığı sürece verileriniz silinebilir. Ancak üyelik sözleşmesi ve yasal yükümlülükler nedeniyle bazı verileriniz saklanmaya devam edebilir.',
     'consent_withdrawal_confirm' => 'Gizlilik politikası rızamı geri çekmek istediğimi ve bunun sonuçlarını anladığımı onaylıyorum.',
     'withdraw_consent' => 'Rızayı Geri Çek',
+    
+    // DSGVO Page
+    'dsgvo_title' => 'DSGVO - Veri Koruma',
+    'dsgvo_subtitle' => 'Kişisel verilerinizin korunması ve yönetimi ile ilgili haklarınız',
 ];

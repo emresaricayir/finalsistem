@@ -546,4 +546,8 @@ return [
     'consent_withdrawal_info_desc' => 'Wenn Sie Ihre Einwilligung widerrufen, können Ihre Daten gelöscht werden, es sei denn, es besteht eine andere Rechtsgrundlage für die Verarbeitung. Aufgrund der Mitgliedschaftsvereinbarung und gesetzlicher Verpflichtungen können jedoch einige Ihrer Daten weiterhin gespeichert werden.',
     'consent_withdrawal_confirm' => 'Ich bestätige, dass ich meine Einwilligung zur Datenschutzerklärung widerrufen möchte und die Konsequenzen verstehe.',
     'withdraw_consent' => 'Einwilligung Widerrufen',
+    
+    // DSGVO Page
+    'dsgvo_title' => 'DSGVO - Datenschutz',
+    'dsgvo_subtitle' => 'Ihre Rechte bezüglich des Schutzes und der Verwaltung Ihrer personenbezogenen Daten',
 ];

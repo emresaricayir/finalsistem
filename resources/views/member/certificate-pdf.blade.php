@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Üyelik Belgesi - {{ $member->name }} {{ $member->surname }}</title>
+    <title>Mitgliedsbescheinigung - {{ $member->name }} {{ $member->surname }}</title>
     <style>
         @page {
             margin: 0;
@@ -579,30 +579,26 @@
                     <img src="{{ url('storage/' . $settings['logo']) }}" alt="Logo" class="logo" onerror="console.log('Logo yüklenemedi: ' + this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="logo-placeholder" style="display: none;">
                         <i class="fas fa-building" style="font-size: 40px; color: white; opacity: 0.7;"></i>
-                        <div style="font-size: 12px; color: white; opacity: 0.7; margin-top: 5px;">LOGO YÜKLENEMEDİ</div>
+                        <div style="font-size: 12px; color: white; opacity: 0.7; margin-top: 5px;">LOGO KONNTE NICHT GELADEN WERDEN</div>
                     </div>
                 @else
                     <div class="logo-placeholder">
                         <i class="fas fa-building" style="font-size: 40px; color: white; opacity: 0.7;"></i>
-                        <div style="font-size: 12px; color: white; opacity: 0.7; margin-top: 5px;">LOGO YOK</div>
+                        <div style="font-size: 12px; color: white; opacity: 0.7; margin-top: 5px;">KEIN LOGO</div>
                     </div>
                 @endif
             </div>
             <div class="header-text">
                 <div class="organization-name">{{ $settings['organization_subtitle'] ?? $settings['organization_name'] }}</div>
-                <div class="organization-subtitle">{{ $settings['certificate_title'] ?? 'Resmi Üyelik Belgesi / Offizielle Mitgliedsbescheinigung' }}</div>
+                <div class="organization-subtitle">{{ $settings['certificate_title'] ?? 'Offizielle Mitgliedsbescheinigung' }}</div>
             </div>
         </div>
 
                 <!-- Body -->
         <div class="certificate-body">
-            <div class="certificate-title">ÜYELİK BELGESİ / MITGLIEDSBESCHEINIGUNG</div>
+            <div class="certificate-title">MITGLIEDSBESCHEINIGUNG</div>
 
             <div class="certificate-text">
-                Aşağıda bilgileri bulunan kişi <strong>{{ $settings['organization_subtitle'] ?? $settings['organization_name'] }}</strong> derneğimizin üyesidir.
-            </div>
-
-            <div class="certificate-text-german">
                 Die unten aufgeführte Person ist Mitglied unseres Vereins <strong>{{ $settings['organization_subtitle'] ?? $settings['organization_name'] }}</strong>.
             </div>
 
@@ -613,13 +609,13 @@
                 <div class="member-birth-info">
                     @if($member->birth_date)
                     <div class="birth-detail">
-                        <span class="birth-label">Doğum Tarihi / Geburtsdatum:</span>
+                        <span class="birth-label">Geburtsdatum:</span>
                         <span class="birth-value">{{ $member->birth_date->format('d.m.Y') }}</span>
                     </div>
                     @endif
                     @if($member->birth_place)
                     <div class="birth-detail">
-                        <span class="birth-label">Doğum Yeri / Geburtsort:</span>
+                        <span class="birth-label">Geburtsort:</span>
                         <span class="birth-value">{{ $member->birth_place }}</span>
                     </div>
                     @endif
@@ -628,11 +624,11 @@
 
                 <div class="member-details">
                     <div class="member-detail">
-                        <div class="member-detail-label">Üye No / Mitgliedsnummer</div>
+                        <div class="member-detail-label">Mitgliedsnummer</div>
                         <div class="member-detail-value">{{ $member->member_no }}</div>
                     </div>
                     <div class="member-detail">
-                        <div class="member-detail-label">Üyelik Tarihi / Beitrittsdatum</div>
+                        <div class="member-detail-label">Beitrittsdatum</div>
                         <div class="member-detail-value">{{ $member->membership_date->format('d.m.Y') }}</div>
                     </div>
                 </div>
@@ -640,11 +636,11 @@
 
             <div class="certificate-footer">
                 <div class="president-info">
-                    <div class="president-name">{{ $settings['pdf_president_name'] ?? $settings['president_name'] ?? 'Başkan Adı' }}</div>
-                    <div class="president-title">{{ $settings['president_title'] ?? 'Başkan / Vorsitzender' }}</div>
+                    <div class="president-name">{{ $settings['pdf_president_name'] ?? $settings['president_name'] ?? 'Vorsitzender Name' }}</div>
+                    <div class="president-title">{{ $settings['president_title'] ?? 'Vorsitzender' }}</div>
                     <div class="signature-line"></div>
                     <div class="certificate-date">
-                        Belge Tarihi / Ausstellungsdatum: {{ now()->format('d.m.Y') }}
+                        Ausstellungsdatum: {{ now()->format('d.m.Y') }}
                     </div>
                 </div>
             </div>
@@ -653,16 +649,16 @@
                 <!-- Footer -->
         <div class="footer">
             <div class="footer-section">
-                <div class="footer-title">İletişim Bilgileri / Kontaktdaten</div>
+                <div class="footer-title">Kontaktdaten</div>
                 <div class="footer-content">
                     @if($settings['organization_address'])
-                        <strong>Adres / Anschrift:</strong> {{ $settings['organization_address'] }}<br>
+                        <strong>Anschrift:</strong> {{ $settings['organization_address'] }}<br>
                     @endif
                     @if($settings['organization_phone'])
                         <strong>Telefon:</strong> {{ $settings['organization_phone'] }}<br>
                     @endif
                     @if($settings['organization_email'])
-                        <strong>E-posta / E-Mail:</strong> {{ $settings['organization_email'] }}
+                        <strong>E-Mail:</strong> {{ $settings['organization_email'] }}
                     @endif
                 </div>
             </div>
@@ -685,7 +681,7 @@
             transition: all 0.3s ease;
         " onmouseover="this.style.background='#0f766e'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#0d9488'; this.style.transform='translateY(0)'">
             <i class="fas fa-print" style="margin-right: 8px;"></i>
-            Yazdır
+            Drucken
         </button>
     </div>
 

@@ -125,6 +125,26 @@
                         @enderror
                     </div>
 
+                    <!-- Published Date -->
+                    <div>
+                        <label for="published_at" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-2 text-blue-500"></i>
+                            Yayın Tarihi
+                        </label>
+                        <input type="datetime-local"
+                               name="published_at"
+                               id="published_at"
+                               value="{{ old('published_at') }}"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('published_at') border-red-500 @enderror">
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Geçmişe dair haber eklemek için tarih seçebilirsiniz. Boş bırakılırsa şu anki tarih kullanılır.
+                        </p>
+                        @error('published_at')
+                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Active Status -->
                     <div>
                         <label class="flex items-center">

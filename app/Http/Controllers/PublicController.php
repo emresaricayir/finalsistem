@@ -21,9 +21,9 @@ class PublicController extends Controller
      */
     public function welcome()
     {
-        // Get recent news
+        // Get recent news - en yeni tarihli önce, en eski tarihli en sonda gösterilecek
         $recentNews = News::where('is_active', true)
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->limit(8)
             ->get();
 
@@ -83,7 +83,7 @@ class PublicController extends Controller
     {
         $orgName = Settings::get('organization_name', 'Cami Üyelik Sistemi');
         $news = News::where('is_active', true)
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->paginate(10);
 
         return view('news.all', compact('news', 'orgName'));
@@ -117,7 +117,7 @@ class PublicController extends Controller
                 ->where(function($w) use ($q){
                     $w->where('title', 'like', "%{$q}%")
                       ->orWhere('content', 'like', "%{$q}%");
-                })->orderBy('created_at', 'desc')->limit(20)->get();
+                })->orderByRaw('COALESCE(published_at, created_at) DESC')->limit(20)->get();
 
             $announcementResults = Announcement::where('is_active', true)
                 ->where(function($w) use ($q){

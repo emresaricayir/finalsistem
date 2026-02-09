@@ -84,7 +84,7 @@
             <div class="flex items-center justify-between">
                 <!-- Mobile Menu Button -->
                 <div class="flex items-center space-x-3">
-                    <button id="mobile-menu-toggle" type="button" class="group relative w-12 h-12 rounded-xl bg-gradient-to-br from-teal-700/80 to-teal-800/80 hover:from-teal-600/90 hover:to-teal-700/90 flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 focus:ring-offset-teal-800 shadow-lg hover:shadow-xl transform hover:scale-105 border border-teal-600/50 hover:border-teal-500/70">
+                    <button id="mobile-menu-toggle" type="button" class="group relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-lg hover:shadow-xl transform hover:scale-105" style="background: linear-gradient(135deg, var(--theme-hover-color, #0f766e) 0%, var(--theme-primary-color, #085952) 100%); border: 1px solid rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.5);" onmouseover="this.style.background='linear-gradient(135deg, var(--theme-link-color, #0d9488) 0%, var(--theme-hover-color, #0f766e) 100%)'; this.style.borderColor='rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.7)';" onmouseout="this.style.background='linear-gradient(135deg, var(--theme-hover-color, #0f766e) 0%, var(--theme-primary-color, #085952) 100%)'; this.style.borderColor='rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.5)';" onfocus="this.style.outline='2px solid var(--theme-link-color, #0d9488)'; this.style.outlineOffset='2px';" onblur="this.style.outline='none';">
                         <div class="w-5 h-5 flex flex-col justify-center items-center">
                             <span class="bg-white block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm group-data-[menu-open]:rotate-45 group-data-[menu-open]:translate-y-1"></span>
                             <span class="bg-white block transition-all duration-300 ease-out h-0.5 w-5 rounded-sm my-0.5 group-data-[menu-open]:opacity-0"></span>
@@ -155,8 +155,9 @@
                             <div class="menu-item" style="animation-delay: {{ $index * 50 }}ms">
                                 <div class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors group">
                                     <a href="{{ $menuService->buildMenuUrl($menuItem) }}"
-                                       class="flex-1 text-gray-900 font-semibold text-base transition-colors" 
+                                       class="flex-1 text-gray-900 font-semibold text-base transition-colors {{ $hasChildren ? 'main-menu-link' : '' }}" 
                                        style="font-family: 'Inter', system-ui, sans-serif;"
+                                       data-has-children="{{ $hasChildren ? 'true' : 'false' }}"
                                        onmouseover="this.style.color='{{ $themeLinkColor ?? '#0d9488' }}'"
                                        onmouseout="this.style.color='#111827'">
                                         {{ $menuItem->title }}
@@ -373,10 +374,23 @@
             }
 
             // Close menu when clicking on menu links
+            // But don't close if it's a dropdown parent link - let it toggle submenu instead
             const menuLinks = panel.querySelectorAll('a');
             menuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    setTimeout(closeMenu, 150);
+                link.addEventListener('click', function(e) {
+                    const hasChildren = link.getAttribute('data-has-children') === 'true';
+                    if (hasChildren) {
+                        // If it's a dropdown parent, prevent default and toggle submenu
+                        e.preventDefault();
+                        const menuItem = link.closest('.menu-item');
+                        const toggleBtn = menuItem ? menuItem.querySelector('.submenu-toggle') : null;
+                        if (toggleBtn) {
+                            toggleSubmenu(toggleBtn);
+                        }
+                    } else {
+                        // If it's a regular link or submenu link, close the menu
+                        setTimeout(closeMenu, 150);
+                    }
                 });
             });
 

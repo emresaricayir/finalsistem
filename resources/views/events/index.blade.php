@@ -197,8 +197,9 @@
                                 @if($event->image_path)
                                 <img src="{{ asset('storage/' . $event->image_path) }}" 
                                      alt="{{ $event->title }}" 
-                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                                     onclick="openPhotoModal('{{ asset('storage/' . $event->image_path) }}', '{{ addslashes($event->title) }}')">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                                 @else
                                 <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                                     <i class="fas fa-calendar-alt text-gray-400 text-3xl"></i>
@@ -316,6 +317,63 @@
     </div>
 
     @include('partials.footer')
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
+        <div class="relative max-w-4xl w-full">
+            <button onclick="closePhotoModal()" class="absolute -top-12 right-0 text-white text-2xl hover:text-gray-300 transition-colors z-10">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="max-h-[90vh] overflow-auto">
+                <img id="modalPhoto" src="" alt="" class="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg mx-auto">
+            </div>
+            <div id="modalPhotoTitle" class="text-white text-center mt-4 text-lg font-medium"></div>
+        </div>
+    </div>
+
+    <script>
+        // Photo Modal Functions
+        function openPhotoModal(imageSrc, imageTitle) {
+            const modal = document.getElementById('photoModal');
+            const modalPhoto = document.getElementById('modalPhoto');
+            const modalPhotoTitle = document.getElementById('modalPhotoTitle');
+            
+            if (modal && modalPhoto && modalPhotoTitle) {
+                modalPhoto.src = imageSrc;
+                modalPhoto.alt = imageTitle;
+                modalPhotoTitle.textContent = imageTitle;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('photoModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closePhotoModal();
+                    }
+                });
+            }
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closePhotoModal();
+                }
+            });
+        });
+    </script>
 
     <script>
         // Event Share Functions - Global scope

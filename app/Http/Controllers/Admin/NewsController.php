@@ -39,7 +39,7 @@ class NewsController extends Controller
         }
 
         $newsItems = $query->orderBy('sort_order')
-                           ->orderBy('created_at', 'desc')
+                           ->orderByRaw('COALESCE(published_at, created_at) DESC')
                            ->paginate(15)
                            ->appends($request->query());
 
@@ -63,12 +63,20 @@ class NewsController extends Controller
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
         $validated['created_by'] = Auth::id();
+        
+        // published_at yoksa şu anki tarihi kullan
+        if (empty($validated['published_at'])) {
+            $validated['published_at'] = now();
+        } else {
+            $validated['published_at'] = \Carbon\Carbon::parse($validated['published_at']);
+        }
 
         // Handle cover image upload
         if ($request->hasFile('image')) {
@@ -114,21 +122,33 @@ class NewsController extends Controller
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
+            'published_at' => 'nullable|date',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['is_featured'] = $request->has('is_featured');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
+        
+        // published_at işle
+        if (!empty($validated['published_at'])) {
+            $validated['published_at'] = \Carbon\Carbon::parse($validated['published_at']);
+        } else {
+            // Eğer boşsa, mevcut değeri koru veya şu anki tarihi kullan
+            $validated['published_at'] = $news->published_at ?? now();
+        }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('news', 'public');
             $validated['image_path'] = 'storage/' . $path;
         }
 
+        // Güncelleme öncesi durumu kontrol et
+        $hasPhotos = $request->hasFile('photos');
+        
         $news->update($validated);
 
         // Handle additional photos upload
-        if ($request->hasFile('photos')) {
+        if ($hasPhotos) {
             $currentOrder = $news->photos()->count();
             foreach ($request->file('photos') as $file) {
                 $p = $file->store('news/photos', 'public');
@@ -139,6 +159,12 @@ class NewsController extends Controller
                     'created_by' => Auth::id(),
                 ]);
             }
+        }
+
+        // Güncelleme gerçekleştiyse admin/news sayfasına yönlendir
+        if ($news->wasChanged() || $hasPhotos) {
+            return redirect()->route('admin.news.index')
+                ->with('success', 'Haber başarıyla güncellendi.');
         }
 
         return redirect()->route('admin.news.edit', $news)

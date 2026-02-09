@@ -214,6 +214,7 @@ class MemberController extends Controller
             'notes' => 'nullable|string',
             'signature' => 'nullable|string',
             'sepa_agreement' => 'nullable|boolean',
+            'privacy_consent' => 'required|accepted',
         ]);
 
         // Üye numarasını otomatik oluştur (11 karakter) - benzersiz olmasını garanti et
@@ -229,6 +230,12 @@ class MemberController extends Controller
         // Signature date ekle (eğer signature varsa)
         if (!empty($validated['signature'])) {
             $validated['signature_date'] = now();
+        }
+
+        // Privacy consent date ekle (DSGVO)
+        if (!empty($validated['privacy_consent'])) {
+            $validated['privacy_consent'] = true;
+            $validated['privacy_consent_date'] = now();
         }
 
         // Set default payment method if not provided
@@ -268,8 +275,9 @@ class MemberController extends Controller
         $maxAttempts = 1000; // Daha fazla deneme
         $attempt = 0;
 
-        // En yüksek mevcut üye numarasını bul
-        $lastMember = Member::where('member_no', 'LIKE', 'Mitglied%')
+        // En yüksek mevcut üye numarasını bul (silinen dahil - tekrar kullanılmasın)
+        $lastMember = Member::withTrashed()
+            ->where('member_no', 'LIKE', 'Mitglied%')
             ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
             ->first();
 
@@ -298,9 +306,10 @@ class MemberController extends Controller
             // Force delete edilen üyelerin numaralarını da kontrol et (AccessLog snapshot'larından)
             $forceDeleted = false;
             if (!$exists) {
+                // Laravel'in native JSON where clause'unu kullan (daha güvenilir)
                 $forceDeleted = \App\Models\AccessLog::where('action', 'force_delete')
                     ->whereNotNull('details')
-                    ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($memberNo)])
+                    ->where('details->member_snapshot->member_no', $memberNo)
                     ->exists();
             }
 
@@ -451,6 +460,7 @@ class MemberController extends Controller
             'notes' => 'nullable|string',
             'signature' => 'nullable|string',
             'sepa_agreement' => 'nullable|boolean',
+            'privacy_consent' => 'nullable|accepted',
         ], [
             'member_no.unique' => 'Bu üye numarası zaten kullanılıyor (silinen üyeler dahil).',
             'email.unique' => 'Bu e-posta adresi zaten kullanılıyor.',
@@ -467,11 +477,10 @@ class MemberController extends Controller
             }
             
             // Force delete edilen üyelerin numaralarını kontrol et (AccessLog snapshot'larından)
-            // JSON içinde member_snapshot->member_no kontrolü
-            // MySQL/MariaDB için JSON_EXTRACT kullanıyoruz (performans için)
+            // Laravel'in native JSON where clause'unu kullan (daha güvenilir)
             $forceDeletedMemberNo = \App\Models\AccessLog::where('action', 'force_delete')
                 ->whereNotNull('details')
-                ->whereRaw('JSON_EXTRACT(details, "$.member_snapshot.member_no") = ?', [json_encode($request->member_no)])
+                ->where('details->member_snapshot->member_no', $request->member_no)
                 ->exists();
             
             if ($forceDeletedMemberNo) {
@@ -493,6 +502,18 @@ class MemberController extends Controller
         // Signature date güncelle (eğer yeni signature varsa)
         if (!empty($validated['signature']) && $validated['signature'] !== $member->signature) {
             $validated['signature_date'] = now();
+        }
+
+        // Privacy consent date güncelle (eğer privacy_consent değiştiyse)
+        if (isset($validated['privacy_consent']) && $validated['privacy_consent']) {
+            $validated['privacy_consent'] = true;
+            // Eğer daha önce onay verilmemişse veya tarih yoksa, şu anki tarihi set et
+            if (!$member->privacy_consent || !$member->privacy_consent_date) {
+                $validated['privacy_consent_date'] = now();
+            }
+        } else {
+            // Eğer checkbox işaretlenmemişse, privacy_consent'i false yap ama tarihi koru
+            $validated['privacy_consent'] = false;
         }
 
         // Şifre güncelleme: Eğer şifre girildiyse hash'le ve kaydet

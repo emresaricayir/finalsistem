@@ -18,12 +18,14 @@ class News extends Model
         'is_featured',
         'sort_order',
         'created_by',
+        'published_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
+        'published_at' => 'datetime',
     ];
 
     public function creator(): BelongsTo
@@ -43,7 +45,9 @@ class News extends Model
 
     public function scopePublic($query)
     {
-        return $query->active()->orderBy('sort_order')->orderBy('created_at', 'desc');
+        return $query->active()
+            ->orderBy('sort_order')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC');
     }
 
     /**

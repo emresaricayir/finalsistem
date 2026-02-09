@@ -112,60 +112,71 @@
     @yield('styles')
 </head>
 <body class="min-h-screen bg-white custom-scrollbar" style="font-family: 'Titillium Web', sans-serif;">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-teal-800 to-teal-900 border-b border-teal-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div class="flex items-center">
-                    @if(\App\Models\Settings::hasLogo())
-                        <img src="{{ \App\Models\Settings::getLogoUrl() }}"
-                             alt="{{ $settings['organization_name'] }}"
-                             class="w-16 h-16 object-contain bg-white rounded-xl p-1 mr-4 shadow-xl">
-                    @else
-                        <div class="w-16 h-16 bg-gradient-to-r from-teal-400 to-teal-600 rounded-xl flex items-center justify-center mr-4 shadow-xl">
-                            <i class="fas fa-mosque text-white text-2xl"></i>
+    <!-- Header & Navigation Container (Sticky) -->
+    <div class="sticky top-0 z-50">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-teal-800 to-teal-900 border-b border-teal-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-6">
+                    <div class="flex items-center">
+                        @if(\App\Models\Settings::hasLogo())
+                            <img src="{{ \App\Models\Settings::getLogoUrl() }}"
+                                 alt="{{ $settings['organization_name'] }}"
+                                 class="w-16 h-16 object-contain bg-white rounded-xl p-1 mr-4 shadow-xl">
+                        @else
+                            <div class="w-16 h-16 bg-gradient-to-r from-teal-400 to-teal-600 rounded-xl flex items-center justify-center mr-4 shadow-xl">
+                                <i class="fas fa-mosque text-white text-2xl"></i>
+                            </div>
+                        @endif
+                        <div>
+                            <h1 class="text-2xl font-bold text-white mb-1">{{ $settings['organization_name'] }}</h1>
+                            <p class="text-sm text-teal-100 font-medium">{{ __('common.member_panel') }}</p>
                         </div>
-                    @endif
-                    <div>
-                        <h1 class="text-2xl font-bold text-white mb-1">{{ $settings['organization_name'] }}</h1>
-                        <p class="text-sm text-teal-100 font-medium">{{ __('common.member_panel') }}</p>
                     </div>
-                </div>
 
-                <div class="flex items-center space-x-6">
-                    <div class="hidden md:block text-right">
-                        <p class="text-sm text-teal-100 font-medium">{{ __('common.welcome') }}</p>
-                        <p class="font-bold text-white text-lg">{{ $member->name }} {{ $member->surname }}</p>
-                    </div>
-                    <form action="{{ route('member.logout') }}" method="POST" class="inline hidden lg:block">
-                        @csrf
-                        <button type="submit" class="bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25" title="{{ __('common.logout') }}">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </form>
-                    <!-- Language Switcher - En sağda -->
-                    <div class="flex items-center space-x-0 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm overflow-hidden ml-auto">
-                        <a href="{{ route('language.switch', 'tr') }}" 
-                           class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'tr' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
-                           title="Türkçe">
-                            <img src="{{ asset('storage/templates/tr.png') }}" alt="Türkçe" class="w-4 h-3 object-cover rounded-sm">
-                            <span class="text-xs font-semibold">TR</span>
-                        </a>
-                        <span class="w-px h-4 bg-white/30"></span>
-                        <a href="{{ route('language.switch', 'de') }}" 
-                           class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'de' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
-                           title="Deutsch">
-                            <img src="{{ asset('storage/templates/de.png') }}" alt="Deutsch" class="w-4 h-3 object-cover rounded-sm">
-                            <span class="text-xs font-semibold">DE</span>
-                        </a>
+                    <div class="flex items-center space-x-6">
+                        <div class="hidden md:block text-right">
+                            <p class="text-sm text-teal-100 font-medium">{{ __('common.welcome') }}</p>
+                            <p class="font-bold text-white text-lg">{{ $member->name }} {{ $member->surname }}</p>
+                        </div>
+                        <form action="{{ route('member.logout') }}" method="POST" class="inline hidden lg:block">
+                            @csrf
+                            <button type="submit" class="bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25" title="{{ __('common.logout') }}">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </button>
+                        </form>
+                        <!-- Language Switcher - En sağda -->
+                        <div class="flex flex-col items-end space-y-2 ml-auto">
+                            <div class="flex items-center space-x-0 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm overflow-hidden">
+                                <a href="{{ route('language.switch', 'tr') }}" 
+                                   class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'tr' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
+                                   title="Türkçe">
+                                    <img src="{{ asset('storage/templates/tr.png') }}" alt="Türkçe" class="w-4 h-3 object-cover rounded-sm">
+                                    <span class="text-xs font-semibold">TR</span>
+                                </a>
+                                <span class="w-px h-4 bg-white/30"></span>
+                                <a href="{{ route('language.switch', 'de') }}" 
+                                   class="flex items-center space-x-1.5 px-3 py-2 transition-all duration-200 {{ app()->getLocale() === 'de' ? 'text-white bg-white/20' : 'text-teal-100 hover:bg-white/10' }}"
+                                   title="Deutsch">
+                                    <img src="{{ asset('storage/templates/de.png') }}" alt="Deutsch" class="w-4 h-3 object-cover rounded-sm">
+                                    <span class="text-xs font-semibold">DE</span>
+                                </a>
+                            </div>
+                            <!-- Çıkış Butonu - Mobil için dil değişim butonlarının altında -->
+                            <form action="{{ route('member.logout') }}" method="POST" class="lg:hidden">
+                                @csrf
+                                <button type="submit" class="bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-3 py-2 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25" title="{{ __('common.logout') }}">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Navigation -->
-    <div class="bg-teal-700 border-b border-teal-600">
+        <!-- Navigation -->
+        <div class="bg-teal-700 border-b border-teal-600">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Mobile Menu Button -->
             <div class="flex justify-between items-center py-4 lg:hidden">
@@ -177,11 +188,6 @@
 
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex flex-row gap-3 md:gap-8 py-6">
-                <a href="{{ route('member.dashboard') }}"
-                   class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
-                    <i class="fas fa-home mr-2"></i>
-                    {{ __('common.member_dashboard') }}
-                </a>
                 <a href="{{ route('member.profile') }}"
                    class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
                     <i class="fas fa-user mr-2"></i>
@@ -197,6 +203,11 @@
                     <i class="fas fa-phone mr-2"></i>
                     {{ __('common.member_contact') }}
                 </a>
+                <a href="{{ route('member.dsgvo') }}"
+                   class="text-teal-100 hover:text-white hover:bg-white/10 pb-3 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-lg flex items-center">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    DSGVO
+                </a>
                 @if($member->application_status === 'approved')
                 <a href="{{ route('member.application.pdf', $member->id) }}?preview=1"
                     target="_blank"
@@ -210,12 +221,6 @@
             <!-- Mobile Navigation Menu -->
             <div id="mobile-menu" class="hidden lg:hidden pb-4">
                 <nav class="flex flex-col space-y-2">
-                    <a href="{{ route('member.dashboard') }}"
-                       class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
-                        <i class="fas fa-home mr-3 text-base"></i>
-                        Ana Sayfa
-                        <span class="text-xs ml-2">(Startseite)</span>
-                    </a>
                     <a href="{{ route('member.profile') }}"
                        class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
                         <i class="fas fa-user mr-3 text-base"></i>
@@ -234,6 +239,11 @@
                         İletişim & Bağış
                         <span class="text-xs ml-2">(Kontakt & Spende)</span>
                     </a>
+                    <a href="{{ route('member.dsgvo') }}"
+                       class="text-teal-100 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center">
+                        <i class="fas fa-shield-alt mr-3 text-base"></i>
+                        DSGVO
+                    </a>
                     @if($member->application_status === 'approved')
                     <a href="{{ route('member.application.pdf', $member->id) }}?preview=1"
                         target="_blank"
@@ -242,18 +252,9 @@
                         {{ __('common.member_certificate') }}
                     </a>
                     @endif
-                    
-                    <!-- Çıkış Butonu - Mobil Menü En Altında -->
-                    <div class="mt-4 pt-4 border-t border-white/20">
-                        <form action="{{ route('member.logout') }}" method="POST" class="w-full">
-                            @csrf
-                            <button type="submit" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-100 hover:text-white px-4 py-3 rounded-xl transition-all duration-300 font-medium border border-red-400/30 hover:shadow-lg hover:shadow-red-500/25 flex items-center justify-center" title="{{ __('common.logout') }}">
-                                <i class="fas fa-sign-out-alt text-lg"></i>
-                            </button>
-                        </form>
-                    </div>
                 </nav>
             </div>
+        </div>
         </div>
     </div>
 
