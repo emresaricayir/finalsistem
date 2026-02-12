@@ -73,8 +73,7 @@
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Content -->
     <main class="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">

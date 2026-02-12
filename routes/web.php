@@ -98,6 +98,8 @@ Route::get('/ara', [PublicController::class, 'search'])->name('search');
 Route::middleware(['auth'])->group(function () {
     Route::delete('/admin/announcements/{announcement}/image', [AnnouncementController::class, 'removeImage'])
         ->name('admin.announcements.remove-image');
+    Route::delete('/admin/announcements/{announcement}/image-de', [AnnouncementController::class, 'removeImageDe'])
+        ->name('admin.announcements.remove-image-de');
 });
 
 // Gallery Routes
@@ -209,6 +211,8 @@ Route::middleware(['auth', 'verified', 'admin', 'update.last.login'])->prefix('a
 
     // News
     Route::post('news/{news}/toggle-status', [NewsController::class, 'toggleStatus'])->name('news.toggle-status');
+    Route::delete('news/{news}/image', [NewsController::class, 'removeImage'])->name('news.remove-image');
+    Route::delete('news/{news}/image-de', [NewsController::class, 'removeImageDe'])->name('news.remove-image-de');
     Route::resource('news', NewsController::class);
 
     // News Photos
@@ -369,7 +373,9 @@ Route::get('/register', function () {
 
 // Member Application Routes
 Route::get('/uyelik-basvuru', [MemberApplicationController::class, 'showApplicationForm'])->name('member.application');
-Route::post('/uyelik-basvuru', [MemberApplicationController::class, 'storeApplication'])->name('member.application.store');
+Route::post('/uyelik-basvuru', [MemberApplicationController::class, 'storeApplication'])
+    ->middleware('throttle:3,10') // 10 dakikada maksimum 3 başvuru (bot koruması)
+    ->name('member.application.store');
 Route::get('/uyelik-basvuru/basarili/{id}', [MemberApplicationController::class, 'applicationSuccess'])->name('member.application.success')->where('id', '[0-9]+');
 Route::get('/uyelik-basvuru/pdf/{id}', [MemberApplicationController::class, 'generatePdf'])->name('member.application.pdf')->where('id', '[0-9]+');
 

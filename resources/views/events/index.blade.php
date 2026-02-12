@@ -109,8 +109,7 @@
     </style>
 </head>
 <body>
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Container -->
     <div class="relative min-h-screen">
@@ -431,6 +430,8 @@
                 });
             } else {
                 const textArea = document.createElement('textarea');
+                textArea.setAttribute('charset', 'UTF-8');
+                textArea.style.fontFamily = 'Arial, sans-serif';
                 textArea.value = text;
                 document.body.appendChild(textArea);
                 textArea.select();

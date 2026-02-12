@@ -118,8 +118,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($log->member)
-                                <div class="text-sm font-medium text-gray-900">{{ $log->member->full_name }}</div>
-                                <div class="text-sm text-gray-500">{{ $log->member->member_no }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $log->member->full_name }}</div>
+                            <div class="text-sm text-gray-500">{{ $log->member->member_no }}</div>
                                 @if($log->member->trashed())
                                     <div class="text-xs text-red-500 italic mt-1">(Silinmiş)</div>
                                 @endif

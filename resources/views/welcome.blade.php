@@ -100,24 +100,23 @@
             $year    = date('Y');
         @endphp
 
-        @include('partials.top-header')
-        @include('partials.main-menu')
+        @include('partials.header-menu-wrapper')
 
         <!-- Hero Section -->
         <section class="bg-white text-gray-900 py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     <!-- News Slider -->
-                    <div class="lg:col-span-2 flex flex-col">
+                    <div class="lg:col-span-2">
                         @if($news->count() > 0)
                             <div class="relative flex-1">
-                                <div id="news-slider" class="overflow-hidden rounded-lg shadow-lg h-full" style="height: 400px;">
+                                <div id="news-slider" class="overflow-hidden rounded-lg shadow-lg h-64 md:h-80 lg:h-[400px]">
                                     <div class="flex transition-transform duration-500 h-full" style="width: {{ max(1, $news->count()) * 100 }}%" data-index="0">
                                         @foreach($news as $item)
-                                            <div class="w-full flex-shrink-0 relative h-full" style="width: {{ 100 / max(1, $news->count()) }}%">
+                                            <div class="w-full flex-shrink-0 relative h-full bg-black" style="width: {{ 100 / max(1, $news->count()) }}%">
                                                 <a href="{{ route('news.detail', $item->id) }}" class="block h-full">
                                                     @if($item->image_path)
-                                                        <img src="{{ asset($item->image_path) }}" alt="{!! htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8') !!}" class="w-full h-full object-cover">
+                                                        <img src="{{ asset($item->image_path) }}" alt="{!! htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8') !!}" class="w-full h-full object-cover object-center">
                         @else
                                                         <div class="w-full h-full bg-gradient-to-br from-slate-600/40 to-slate-700/40 flex items-center justify-center">
                                                             <i class="fas fa-newspaper text-white/70 text-4xl"></i>
@@ -128,11 +127,13 @@
                                                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
 
                                                     <!-- News title overlay -->
-                                                    <div class="absolute bottom-0 left-0 right-0 p-8">
-                                                        <div class="bg-black/60 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20 shadow-2xl max-w-4xl ml-4">
-                                                            <p id="current-news-title-{{ $loop->index }}" class="text-white font-bold text-xl leading-tight drop-shadow-lg {{ $loop->index === 0 ? '' : 'hidden' }}">{!! htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8') !!}</p>
+                                                    <div class="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+                                                        <div class="bg-black/60 backdrop-blur-sm rounded-xl px-4 md:px-6 py-3 md:py-4 border border-white/20 shadow-2xl max-w-4xl ml-2 md:ml-4">
+                                                            <p id="current-news-title-{{ $loop->index }}" class="text-white font-bold text-base md:text-xl leading-tight drop-shadow-lg {{ $loop->index === 0 ? '' : 'hidden' }}">
+                                                                {{ Str::limit(htmlspecialchars($item->title, ENT_QUOTES, 'UTF-8'), 52, '...') }}
+                                                            </p>
                                                         </div>
-                        </div>
+                                                    </div>
                     </a>
                         </div>
                                         @endforeach
@@ -140,10 +141,10 @@
                                 </div>
 
                                 <!-- Slider controls -->
-                                <button type="button" id="news-prev" class="absolute inset-y-0 left-2 my-auto w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                                <button type="button" id="news-prev" class="absolute inset-y-0 left-1 md:left-2 my-auto w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm md:text-base">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <button type="button" id="news-next" class="absolute inset-y-0 right-2 my-auto w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                                <button type="button" id="news-next" class="absolute inset-y-0 right-1 md:right-2 my-auto w-8 h-8 md:w-10 md:h-10 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors text-sm md:text-base">
                                     <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
@@ -158,15 +159,17 @@
                     </div>
 
                     <!-- Announcements & Prayer Times -->
-                    <div class="lg:col-span-1 flex flex-col">
-                        <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
-                            <!-- Header -->
-                            <div class="px-4 py-3 flex-shrink-0" style="background-color: var(--theme-primary-color);">
-                                <h3 class="text-white font-bold text-lg">{{ __('common.announcements') }}</h3>
-                            </div>
+                    <div class="lg:col-span-1 flex flex-col h-full">
+                        <!-- Announcements (üstte, sabit) -->
+                        <div class="flex-shrink-0 mb-4">
+                            <div class="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col">
+                                <!-- Header -->
+                                <div class="px-4 py-3 flex-shrink-0" style="background-color: var(--theme-primary-color);">
+                                    <h3 class="text-white font-bold text-lg">{{ __('common.announcements') }}</h3>
+                                </div>
 
-                            <!-- Announcements Content (Half Height) -->
-                            <div class="p-4 overflow-y-auto overflow-x-hidden" style="max-height: 200px; flex: 0 0 auto;">
+                                <!-- Announcements Content -->
+                                <div class="p-4 overflow-y-auto overflow-x-hidden" style="max-height: 200px;">
                                 @if($announcements->count() > 0)
                                     <div class="space-y-3" id="announcements-container">
                                         @foreach($announcements->take(2) as $announcement)
@@ -186,19 +189,22 @@
                                     </div>
                                 @endif
                                 
-                                @if($totalAnnouncements > 2)
-                                    <div class="mt-3 text-center">
-                                        <a href="{{ route('announcements.all') }}" class="text-sm font-medium inline-flex items-center" style="color: {{ $themeLinkColor ?? '#0d9488' }};" onmouseover="this.style.color='{{ $themeHoverColor ?? '#0f766e' }}'" onmouseout="this.style.color='{{ $themeLinkColor ?? '#0d9488' }}'">
-                                            {{ __('common.all_announcements') }}
-                                            <i class="fas fa-arrow-right ml-1"></i>
-                                        </a>
-                                    </div>
-                                @endif
+                                <!-- Tüm Duyurular Linki (her zaman göster, sabit pozisyon) -->
+                                <div class="mt-3 text-center">
+                                    <a href="{{ route('announcements.all') }}" class="text-sm font-medium inline-flex items-center" style="color: {{ $themeLinkColor ?? '#0d9488' }};" onmouseover="this.style.color='{{ $themeHoverColor ?? '#0f766e' }}'" onmouseout="this.style.color='{{ $themeLinkColor ?? '#0d9488' }}'">
+                                        {{ __('common.all_announcements') }}
+                                        <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                                </div>
                             </div>
+                        </div>
 
-                            <!-- Prayer Times Section -->
-                            @if(isset($todayPrayerTime) && $todayPrayerTime)
-                            <div class="border-t border-gray-200 px-4 py-4 flex-shrink-0">
+                        <!-- Prayer Times (altta, sabit) -->
+                        @if(isset($todayPrayerTime) && $todayPrayerTime)
+                        <div class="flex-shrink-0 mt-auto">
+                            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                                <div class="px-4 py-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <h4 class="text-gray-800 font-bold text-sm flex items-center">
                                         <i class="fas fa-mosque mr-2" style="color: var(--theme-link-color);"></i>
@@ -463,9 +469,10 @@
                                         </div>
                                     @endforeach
                                 </div>
+                                </div>
                             </div>
-                            @endif
                         </div>
+                        @endif
                     </div>
                                     </div>
 
@@ -1051,6 +1058,8 @@
                     }).catch(() => {
                         // Fallback for older browsers
                         const textArea = document.createElement('textarea');
+                        textArea.setAttribute('charset', 'UTF-8');
+                        textArea.style.fontFamily = 'Arial, sans-serif';
                         textArea.value = shareText;
                         document.body.appendChild(textArea);
                         textArea.select();
@@ -1239,6 +1248,8 @@
             // Fallback copy function for older browsers
             function fallbackCopyTextToClipboard(text) {
                 const textArea = document.createElement('textarea');
+                textArea.setAttribute('charset', 'UTF-8');
+                textArea.style.fontFamily = 'Arial, sans-serif';
                 textArea.value = text;
                 textArea.style.position = 'fixed';
                 textArea.style.left = '-999999px';
@@ -1309,17 +1320,19 @@
                 `;
                 document.head.appendChild(style);
 
-                // Simple news slider
+                // Simple news slider with touch/swipe support
                 const slider = document.getElementById('news-slider');
                 if (slider) {
                     const track = slider.querySelector('.flex');
                     const total = track.children.length;
                     let idx = 0;
+                    let autoRotateInterval;
 
                     function go(to) {
                         if (total === 0) return;
                         idx = (to + total) % total;
                         const percent = -(idx * (100 / total));
+                        track.style.transition = 'transform 0.5s ease-out';
                         track.style.transform = `translateX(${percent}%)`;
 
                         // Hide all titles and show current one
@@ -1334,8 +1347,78 @@
                     if (prev) prev.addEventListener('click', () => go(idx - 1));
                     if (next) next.addEventListener('click', () => go(idx + 1));
 
+                    // Touch/Swipe support for mobile
+                    let touchStartX = 0;
+                    let touchEndX = 0;
+                    let isDragging = false;
+                    let startTranslate = 0;
+                    let currentTranslate = 0;
+
+                    function getTranslateX() {
+                        const transform = track.style.transform;
+                        if (!transform || transform === 'none') return 0;
+                        const match = transform.match(/translateX\(([^)]+)%\)/);
+                        return match ? parseFloat(match[1]) : 0;
+                    }
+
+                    function handleTouchStart(e) {
+                        touchStartX = e.touches[0].clientX;
+                        startTranslate = getTranslateX();
+                        isDragging = true;
+                        track.style.transition = 'none';
+                        // Pause auto-rotate while dragging
+                        if (autoRotateInterval) {
+                            clearInterval(autoRotateInterval);
+                        }
+                    }
+
+                    function handleTouchMove(e) {
+                        if (!isDragging) return;
+                        touchEndX = e.touches[0].clientX;
+                        const diff = touchEndX - touchStartX;
+                        const sliderWidth = slider.offsetWidth;
+                        const percentPerSlide = 100 / total;
+                        currentTranslate = startTranslate + (diff / sliderWidth) * 100;
+                        
+                        // Limit dragging to prevent over-scrolling
+                        const minTranslate = -(total - 1) * percentPerSlide;
+                        const maxTranslate = 0;
+                        currentTranslate = Math.max(minTranslate, Math.min(maxTranslate, currentTranslate));
+                        
+                        track.style.transform = `translateX(${currentTranslate}%)`;
+                    }
+
+                    function handleTouchEnd(e) {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        
+                        const diff = touchEndX - touchStartX;
+                        const threshold = 50; // Minimum swipe distance in pixels
+                        
+                        if (Math.abs(diff) > threshold) {
+                            if (diff > 0) {
+                                // Swipe right - go to previous
+                                go(idx - 1);
+                            } else {
+                                // Swipe left - go to next
+                                go(idx + 1);
+                            }
+                        } else {
+                            // Not enough swipe, snap back to current
+                            go(idx);
+                        }
+                        
+                        // Resume auto-rotate
+                        autoRotateInterval = setInterval(() => go(idx + 1), 6000);
+                    }
+
+                    // Add touch event listeners
+                    slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    slider.addEventListener('touchmove', handleTouchMove, { passive: true });
+                    slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+
                     // auto-rotate
-                    setInterval(() => go(idx + 1), 6000);
+                    autoRotateInterval = setInterval(() => go(idx + 1), 6000);
                 }
             });
         </script>
@@ -1600,6 +1683,8 @@
                             showEventToast('Metin kopyalandı!', 'success');
                         }).catch(() => {
                             const textArea = document.createElement('textarea');
+                            textArea.setAttribute('charset', 'UTF-8');
+                            textArea.style.fontFamily = 'Arial, sans-serif';
                             textArea.value = shareText;
                             document.body.appendChild(textArea);
                             textArea.select();
@@ -1609,6 +1694,8 @@
                         });
                     } else {
                         const textArea = document.createElement('textarea');
+                        textArea.setAttribute('charset', 'UTF-8');
+                        textArea.style.fontFamily = 'Arial, sans-serif';
                         textArea.value = shareText;
                         document.body.appendChild(textArea);
                         textArea.select();

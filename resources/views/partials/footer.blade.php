@@ -237,7 +237,8 @@
                 </div>
                 
                 <p class="text-gray-300 font-medium text-xs sm:text-sm md:text-base">
-                    &copy; {{ date('Y') }} {{ \App\Models\Settings::get('organization_name', 'Cami Üyelik Sistemi') }} - {{ __('common.all_rights_reserved') }}.
+                    &copy; {{ date('Y') }} {{ \App\Models\Settings::get('organization_name', 'Cami Üyelik Sistemi') }} - {{ __('common.all_rights_reserved') }}. 
+                    <span class="text-gray-400">v{{ config('app.version', '1.0.0') }}</span>
                 </p>
                 <p class="text-gray-400 text-xs sm:text-xs md:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-0">
                     <span class="sm:mr-2">{{ __('common.design_and_coding') }}</span>

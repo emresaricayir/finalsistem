@@ -14,6 +14,7 @@ class Announcement extends BaseModel
         'content_tr',
         'content_de',
         'image_path',
+        'image_path_de',
         'type',
         'is_active',
         'is_featured',
@@ -40,7 +41,33 @@ class Announcement extends BaseModel
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        $locale = app()->getLocale(); // 'tr' veya 'de'
+        
+        // Almanca için özel görsel varsa onu kullan
+        if ($locale === 'de' && !empty($this->attributes['image_path_de'] ?? null)) {
+            return asset('storage/' . $this->attributes['image_path_de']);
+        }
+        
+        // Fallback: Türkçe görsel veya null
+        $imagePath = $this->attributes['image_path'] ?? null;
+        return $imagePath ? asset('storage/' . $imagePath) : null;
+    }
+
+    /**
+     * Locale'e göre kapak görseli döndür
+     * Eğer seçilen dilde görsel yoksa, Türkçe görseli göster (fallback)
+     */
+    public function getImagePathAttribute($value)
+    {
+        $locale = app()->getLocale(); // 'tr' veya 'de'
+        
+        // Almanca için özel görsel varsa onu kullan
+        if ($locale === 'de' && !empty($this->attributes['image_path_de'] ?? null)) {
+            return $this->attributes['image_path_de'];
+        }
+        
+        // Fallback: Türkçe görsel veya null
+        return $value ?? null;
     }
 
     /**

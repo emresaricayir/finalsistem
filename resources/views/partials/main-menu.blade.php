@@ -15,10 +15,10 @@
     }
 </style>
 
-<div class="relative z-50" style="background-color: var(--theme-primary-color); border-top: 1px solid var(--theme-hover-color);">
+<div id="main-menu" class="z-40" style="background-color: var(--theme-primary-color); border-top: 1px solid var(--theme-hover-color);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Desktop -->
-        <nav class="hidden md:flex items-center justify-between h-16 relative z-50">
+        <nav class="hidden md:flex items-center justify-between h-16 relative z-50 min-h-[64px]">
             <div class="flex items-center space-x-8">
                 @foreach($mainMenu as $menuItem)
                     <div class="relative group">
@@ -80,8 +80,8 @@
         </nav>
 
         <!-- Mobile -->
-        <div class="md:hidden py-3">
-            <div class="flex items-center justify-between">
+        <div class="md:hidden py-3 min-h-[60px] flex items-center">
+            <div class="flex items-center justify-between w-full">
                 <!-- Mobile Menu Button -->
                 <div class="flex items-center space-x-3">
                     <button id="mobile-menu-toggle" type="button" class="group relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-lg hover:shadow-xl transform hover:scale-105" style="background: linear-gradient(135deg, var(--theme-hover-color, #0f766e) 0%, var(--theme-primary-color, #085952) 100%); border: 1px solid rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.5);" onmouseover="this.style.background='linear-gradient(135deg, var(--theme-link-color, #0d9488) 0%, var(--theme-hover-color, #0f766e) 100%)'; this.style.borderColor='rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.7)';" onmouseout="this.style.background='linear-gradient(135deg, var(--theme-hover-color, #0f766e) 0%, var(--theme-primary-color, #085952) 100%)'; this.style.borderColor='rgba(var(--theme-link-color-rgb, 13, 148, 136), 0.5)';" onfocus="this.style.outline='2px solid var(--theme-link-color, #0d9488)'; this.style.outlineOffset='2px';" onblur="this.style.outline='none';">
@@ -223,7 +223,7 @@
                         <div class="border-t border-gray-200 px-4 py-3 mt-4">
                             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                                 <i class="fas fa-share-alt mr-2"></i>
-                                Bizi Takip Edin
+                                {{ __('common.follow_us') }}
                             </h3>
                             <div class="flex items-center space-x-3">
                                 @if($facebook)
@@ -271,7 +271,7 @@
                         <div class="border-t border-gray-200 px-4 py-3 mt-2">
                             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
                                 <i class="fas fa-address-book mr-2"></i>
-                                İletişim
+                                {{ __('common.contact') }}
                             </h3>
                             <div class="space-y-2">
                                 @if($phone)

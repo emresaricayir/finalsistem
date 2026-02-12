@@ -256,8 +256,7 @@
 @endsection
 
 @section('content')
-@include('partials.top-header')
-@include('partials.main-menu')
+@include('partials.header-menu-wrapper')
 
 <main class="py-16">
     <div class="container mx-auto px-4">

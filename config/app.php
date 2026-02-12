@@ -135,4 +135,19 @@ return [
 
     'webhook_secret' => env('WEBHOOK_SECRET', null),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value is the version of your application. It will be displayed
+    | in the footer to track which version is deployed on which site.
+    | If APP_VERSION is not set in .env, it will use the file modification
+    | date of this config file, which represents when files were uploaded via FTP.
+    | Format: YYYY.MM.DD (e.g., 2026.02.11)
+    |
+    */
+
+    'version' => env('APP_VERSION', file_exists(__FILE__) ? date('Y.m.d', filemtime(__FILE__)) : date('Y.m.d')),
+
 ];

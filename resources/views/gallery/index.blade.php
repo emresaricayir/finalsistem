@@ -76,8 +76,7 @@
     </style>
 </head>
 <body class="min-h-screen">
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Container -->
     <div class="relative min-h-screen">

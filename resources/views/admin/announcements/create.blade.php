@@ -95,26 +95,52 @@
                 <div class="space-y-6">
 
                     <!-- Image Upload -->
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-image mr-2 text-pink-500"></i>
-                            Kapak Görseli
-                        </label>
-                        <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
-                            <div class="aspect-video bg-gray-100 relative">
-                                <img id="imagePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
-                                <div id="imagePlaceholder" class="absolute inset-0 flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-image text-4xl"></i>
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-4">
+                        <!-- Türkçe Kapak Görseli -->
+                        <div>
+                            <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-purple-500"></i>
+                                Kapak Görseli (Türkçe)
+                            </label>
+                            <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                                <div class="aspect-video bg-gray-100 relative">
+                                    <img id="imagePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
+                                    <div id="imagePlaceholder" class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-4xl"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <input type="file" name="image" id="image" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event, 'imagePreview', 'imagePlaceholder')">
+                                    <p class="text-xs text-gray-500 mt-2">Türkçe sayfalar için kapak görseli. Önerilen oran 16:9. Maksimum 4MB.</p>
                                 </div>
                             </div>
-                            <div class="p-3">
-                                <input type="file" name="image" id="image" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event)">
-                                <p class="text-xs text-gray-500 mt-2">Önerilen oran 16:9. Maksimum 4MB. JPG/PNG/WEBP.</p>
-                            </div>
+                            @error('image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        @error('image')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+
+                        <!-- Almanca Kapak Görseli -->
+                        <div>
+                            <label for="image_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-green-500"></i>
+                                Kapak Görseli (Almanca) <span class="text-xs text-gray-500">(İsteğe bağlı)</span>
+                            </label>
+                            <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                                <div class="aspect-video bg-gray-100 relative">
+                                    <img id="imageDePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
+                                    <div id="imageDePlaceholder" class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-4xl"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <input type="file" name="image_de" id="image_de" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event, 'imageDePreview', 'imageDePlaceholder')">
+                                    <p class="text-xs text-gray-500 mt-2">Almanca sayfalar için kapak görseli. Boş bırakılırsa Türkçe görsel kullanılır. Önerilen oran 16:9. Maksimum 4MB.</p>
+                                </div>
+                            </div>
+                            @error('image_de')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Status Options -->
@@ -211,10 +237,10 @@
 
     });
 
-    function previewAnnouncementImage(e){
+    function previewAnnouncementImage(e, previewId = 'imagePreview', placeholderId = 'imagePlaceholder'){
         const file = e.target.files && e.target.files[0];
-        const img = document.getElementById('imagePreview');
-        const ph = document.getElementById('imagePlaceholder');
+        const img = document.getElementById(previewId);
+        const ph = document.getElementById(placeholderId);
         if(!file){
             img.classList.add('hidden');
             ph.classList.remove('hidden');

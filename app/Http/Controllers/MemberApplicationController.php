@@ -41,6 +41,16 @@ class MemberApplicationController extends Controller
      */
     public function storeApplication(Request $request)
     {
+        // Honeypot kontrolü - Bot koruması
+        // Eğer "company_name" alanı dolu gelirse, bu bir bot demektir
+        if ($request->has('company_name') && !empty($request->company_name)) {
+            // Bot tespit edildi, sessizce reddet (botlara ipucu vermemek için)
+            // Normal bir hata mesajı göster (bot olduğunu belli etme)
+            return back()->withInput()->withErrors([
+                'email' => 'Başvurunuz alınamadı. Lütfen tekrar deneyin.'
+            ]);
+        }
+
         // Check if email exists in soft deleted records
         $existingDeletedMember = Member::onlyTrashed()->where('email', $request->email)->first();
 

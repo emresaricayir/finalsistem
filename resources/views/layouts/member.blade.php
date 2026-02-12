@@ -275,6 +275,7 @@
                 <p class="text-teal-100 text-sm sm:text-base font-medium">
                     © {{ date('Y') }} {{ $settings['organization_name'] }}. Tüm hakları saklıdır.
                     <span class="text-xs text-teal-200 ml-1 sm:ml-2">(Alle Rechte vorbehalten)</span>
+                    <span class="text-xs text-teal-300 ml-1 sm:ml-2">v{{ config('app.version', '1.0.0') }}</span>
                 </p>
             </div>
         </div>

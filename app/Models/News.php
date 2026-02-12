@@ -14,6 +14,7 @@ class News extends Model
         'content_tr',
         'content_de',
         'image_path',
+        'image_path_de',
         'is_active',
         'is_featured',
         'sort_order',
@@ -82,6 +83,23 @@ class News extends Model
         }
         
         return $this->attributes[$field];
+    }
+
+    /**
+     * Locale'e göre kapak görseli döndür
+     * Eğer seçilen dilde görsel yoksa, Türkçe görseli göster (fallback)
+     */
+    public function getImagePathAttribute($value)
+    {
+        $locale = app()->getLocale(); // 'tr' veya 'de'
+        
+        // Almanca için özel görsel varsa onu kullan
+        if ($locale === 'de' && !empty($this->attributes['image_path_de'] ?? null)) {
+            return $this->attributes['image_path_de'];
+        }
+        
+        // Fallback: Türkçe görsel veya null
+        return $value ?? null;
     }
 }
 

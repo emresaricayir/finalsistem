@@ -81,6 +81,7 @@ class AnnouncementController extends Controller
             'content_tr' => 'nullable|string',
             'content_de' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'image_de' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'start_date' => 'nullable|date',
@@ -95,8 +96,14 @@ class AnnouncementController extends Controller
         $data['sort_order'] = $validated['sort_order'] ?? 0;
         $data['created_by'] = Auth::id();
 
+        // Handle cover image upload (Türkçe)
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('announcements', 'public');
+        }
+
+        // Handle cover image upload (Almanca)
+        if ($request->hasFile('image_de')) {
+            $data['image_path_de'] = $request->file('image_de')->store('announcements', 'public');
         }
 
         Announcement::create($data);
@@ -145,6 +152,7 @@ class AnnouncementController extends Controller
             'content_tr' => 'nullable|string',
             'content_de' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'image_de' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'start_date' => 'nullable|date',
@@ -158,11 +166,20 @@ class AnnouncementController extends Controller
         $data['is_featured'] = $request->has('is_featured');
         $data['sort_order'] = $validated['sort_order'] ?? 0;
 
+        // Handle cover image upload (Türkçe)
         if ($request->hasFile('image')) {
-            if ($announcement->image_path) {
-                Storage::disk('public')->delete($announcement->image_path);
+            if ($announcement->getOriginal('image_path')) {
+                Storage::disk('public')->delete($announcement->getOriginal('image_path'));
             }
             $data['image_path'] = $request->file('image')->store('announcements', 'public');
+        }
+
+        // Handle cover image upload (Almanca)
+        if ($request->hasFile('image_de')) {
+            if ($announcement->image_path_de) {
+                Storage::disk('public')->delete($announcement->image_path_de);
+            }
+            $data['image_path_de'] = $request->file('image_de')->store('announcements', 'public');
         }
 
         $announcement->update($data);
@@ -219,18 +236,39 @@ class AnnouncementController extends Controller
             abort(403, 'Bu sayfaya erişim yetkiniz yok.');
         }
 
-        if ($announcement->image_path && Storage::disk('public')->exists($announcement->image_path)) {
-            Storage::disk('public')->delete($announcement->image_path);
+        if ($announcement->getOriginal('image_path') && Storage::disk('public')->exists($announcement->getOriginal('image_path'))) {
+            Storage::disk('public')->delete($announcement->getOriginal('image_path'));
         }
 
-        $announcement->image_path = null;
-        $announcement->save();
+        $announcement->update(['image_path' => null]);
 
         if (request()->expectsJson()) {
             return response()->json(['success' => true]);
         }
 
-        return redirect()->back()->with('success', 'Kapak görseli silindi.');
+        return redirect()->back()->with('success', 'Türkçe kapak görseli silindi.');
+    }
+
+    /**
+     * Remove German image from announcement
+     */
+    public function removeImageDe(Announcement $announcement)
+    {
+        if (!auth()->user()->hasAnyRole(['super_admin', 'editor'])) {
+            abort(403, 'Bu sayfaya erişim yetkiniz yok.');
+        }
+
+        if ($announcement->image_path_de && Storage::disk('public')->exists($announcement->image_path_de)) {
+            Storage::disk('public')->delete($announcement->image_path_de);
+        }
+
+        $announcement->update(['image_path_de' => null]);
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', 'Almanca kapak görseli silindi.');
     }
 
 }

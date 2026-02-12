@@ -1,240 +1,185 @@
-===========================================
-FTP'YE ATILACAK DEĞİŞEN DOSYALAR
-===========================================
+29. Üyelik Başvuru Formu Bot Koruması Eklendi
+    - Honeypot field eklendi (görünmez alan - bot tespiti için)
+      * Form içinde CSS ile tamamen gizlenmiş "company_name" alanı
+      * Botlar bu alanı doldurursa başvuru reddediliyor
+      * Gerçek kullanıcılar bu alanı görmüyor ve etkilenmiyor
+      * resources/views/member/application.blade.php dosyasına eklendi
+    - Rate limiting eklendi (throttle middleware)
+      * 10 dakikada maksimum 3 başvuru yapılabiliyor
+      * Aynı IP'den çok fazla başvuru engelleniyor
+      * routes/web.php dosyasında throttle:3,10 middleware eklendi
+    - Controller'da honeypot kontrolü eklendi
+      * app/Http/Controllers/MemberApplicationController.php dosyasında
+      * storeApplication() metodunun başına bot kontrolü eklendi
+      * Bot tespit edilirse normal bir hata mesajı gösteriliyor (botlara ipucu verilmiyor)
 
-Tarih: 2026-02-08
+Değişiklik Yapılanlar
+resources/views/member/application.blade.php
+routes/web.php
+app/Http/Controllers/MemberApplicationController.php
 
-HABER SİSTEMİ - published_at TARİH BAZLI SIRALAMA ÖZELLİĞİ
-===========================================================
+ 30. Ana Sayfa Haber Slider Mobil İyileştirmesi
+    - Mobilde resim kesilme sorunu çözüldü
+      * Mobilde object-cover + object-center kullanılıyor (resim tam ekranı kaplıyor)
+      * Siyah arka plan eklendi (yatay boşluklar kapatıldı)
+      * Responsive yükseklik: h-64 (mobil) → h-80 (tablet) → h-[400px] (desktop)
+    - Mobilde daha uygun padding ve font boyutları
+      * Başlık padding: p-4 (mobil) → p-8 (desktop)
+      * Başlık font: text-base (mobil) → text-xl (desktop)
+      * Slider kontrolleri: w-8 h-8 (mobil) → w-10 h-10 (desktop)
+    - Touch/Swipe desteği eklendi (mobil parmakla kaydırma)
+      * Sağa-sola kaydırma ile haberler arasında geçiş
+      * Minimum 50px swipe mesafesi kontrolü
+      * Sürükleme sırasında otomatik geçiş duraklatılıyor
+      * Smooth animasyon ve snap-back özelliği
+    - resources/views/welcome.blade.php dosyası güncellendi
 
-Değişiklik Özeti:
-- Haber ekleme/düzenleme formlarına "Yayın Tarihi" alanı eklendi
-- Haberler artık published_at tarihine göre sıralanıyor (yoksa created_at kullanılıyor)
-- Geçmişe dair haber ekleme özelliği eklendi
-- Haber güncelleme sonrası admin/news sayfasına yönlendirme eklendi
-- Haber detay sayfasında güncellenme tarihi gösterimi eklendi
+ 31. Header ve Menü Sticky Yapıldı (Scroll ile Aktifleşiyor)
+    - Header (top-header) başlangıçta normal, scroll yapınca sticky oluyor
+      * JavaScript ile scroll kontrolü eklendi
+      * 10px scroll sonrası sticky top-0 z-50 aktif oluyor
+      * Shadow eklendi (scroll sırasında görsel ayrım için)
+      * min-h-[88px] ile sabit yükseklik (scroll sırasında daralma önlendi)
+      * Smooth transition eklendi
+    - Menü (main-menu) başlangıçta normal, scroll yapınca sticky oluyor
+      * Header'ın dinamik yüksekliğine göre konumlandırılıyor
+      * Desktop: min-h-[64px] ile sabit yükseklik
+      * Mobile: min-h-[60px] ile sabit yükseklik
+      * Scroll sırasında dikey daralma ve yukarı kayma önlendi
+    - Hamburger menü ve dil butonları da sabit kalıyor
+    - Başlangıç pozisyonu korunuyor, scroll yapınca sticky aktif oluyor
+    - resources/views/partials/top-header.blade.php güncellendi
+    - resources/views/partials/main-menu.blade.php güncellendi
+    - resources/views/welcome.blade.php güncellendi (JavaScript eklendi)
 
-DEĞİŞEN DOSYALAR:
-==================
+ 32. Duyuru Detay Sayfası Görsel Modal Boyutu Düzeltildi
+    - Görsel modalı artık düzgün boyutta açılıyor
+      * Container: max-w-7xl → max-w-4xl (daha küçük ve uygun)
+      * Image: max-h-[85vh] (mobil) ve max-h-[90vh] (desktop) eklendi
+      * Image: max-w-full ile genişlik sınırlandı
+      * Image: mx-auto rounded-lg ile merkezleme ve yuvarlatma
+    - Responsive iyileştirmeler
+      * Kapat butonu: Mobilde üstte (-top-12), desktop'ta sağ üstte
+      * Başlık: text-base (mobil) → text-lg (desktop)
+      * Başlık pozisyonu: absolute bottom → relative mt-4 (daha iyi görünüm)
+    - resources/views/announcements/detail.blade.php güncellendi
 
-1. app/Models/News.php
-   - published_at fillable'a eklendi
-   - published_at datetime cast eklendi
-   - scopePublic() metodunda sıralama güncellendi (COALESCE kullanılıyor)
+ 33. Sticky Header ve Menü Tüm Sayfalara Uygulandı
+    - Sticky özelliği artık tüm sayfalarda çalışıyor
+      * Yeni partial oluşturuldu: resources/views/partials/sticky-header-menu.blade.php
+      * JavaScript kodu tüm sayfalara eklendi
+      * Ana sayfadaki duplicate kod kaldırıldı
+    - Etkilenen sayfalar:
+      * welcome.blade.php (ana sayfa)
+      * announcements/detail.blade.php
+      * announcements/all.blade.php
+      * news/detail.blade.php
+      * news/all.blade.php
+      * events/index.blade.php
+      * contact/index.blade.php
+      * gallery/index.blade.php
+      * gallery/category.blade.php
+      * video-gallery/index.blade.php
+      * video-gallery/category.blade.php
+      * page/show.blade.php
+      * search/results.blade.php
+      * board-members/index.blade.php
+      * public/personnel-category.blade.php
+      * member/auth/login.blade.php
+      * member/application.blade.php
+      * member/application-success.blade.php
+      * member/auth/forgot-password.blade.php
+      * member/auth/reset-password.blade.php
+      * errors/generic.blade.php
+    - Yeni sayfalar eklendiğinde otomatik olarak çalışacak (partial include edildiği sürece)
 
-2. app/Http/Controllers/Admin/NewsController.php
-   - store() metoduna published_at validation ve işleme eklendi
-   - update() metoduna published_at validation ve işleme eklendi
-   - update() metodunda güncelleme kontrolü eklendi, güncelleme gerçekleşirse admin/news sayfasına yönlendiriyor
-   - index() metodunda sıralama güncellendi (COALESCE kullanılıyor)
+ 34. Header ve Menü Sürekli Sabit Yapıldı (Wrapper ile Birlikte)
+    - Header ve menü artık birlikte sabit kalıyor (wrapper container)
+      * Yeni wrapper partial oluşturuldu: header-menu-wrapper.blade.php
+      * Wrapper: sticky top-0 z-50 (header ve menü birlikte sabit)
+      * Header: sticky kaldırıldı (wrapper içinde)
+      * Menü: sticky top-[88px] kaldırıldı (wrapper içinde)
+      * Shadow header'da kaldı (görsel ayrım için)
+    - Tüm sayfalarda otomatik çalışıyor
+      * Tüm sayfalarda top-header ve main-menu include'ları wrapper ile değiştirildi
+      * Tek bir include ile hem header hem menü ekleniyor
+      * Yeni sayfalar eklendiğinde otomatik çalışacak
+    - resources/views/partials/header-menu-wrapper.blade.php oluşturuldu
+    - resources/views/partials/top-header.blade.php güncellendi
+    - resources/views/partials/main-menu.blade.php güncellendi
+    - Tüm sayfalarda include'lar güncellendi (21 sayfa)
 
-3. app/Http/Controllers/PublicController.php
-   - welcome() metodunda ana sayfa haber sıralaması güncellendi (en yeni tarihli önce, en eski tarihli en sonda - DESC)
-   - news() metodunda sıralama güncellendi (COALESCE kullanılıyor)
-   - search() metodunda newsResults sıralaması güncellendi (COALESCE kullanılıyor)
+ 35. Header Yazıları Responsive Yapıldı (Tüm Sayfalarda Aynı Stil)
+    - Header'daki organization name ve subtitle yazıları artık tüm sayfalarda aynı stil
+      * Subtitle (DITIB Türkisch...): text-[10px] md:text-xs (mobilde daha küçük, desktop'ta normal)
+      * Organization Name (DİTİB Peine...): text-sm md:text-lg (mobilde küçük, desktop'ta büyük)
+      * Tüm sayfalarda tutarlı görünüm sağlandı
+    - resources/views/partials/top-header.blade.php güncellendi
 
-4. resources/views/admin/news/create.blade.php
-   - Yayın Tarihi (published_at) input alanı eklendi
+ 36. Mobil Menü Çevirileri Düzeltildi
+    - "Bizi Takip Edin" yazısı artık çeviri fonksiyonu kullanıyor
+      * Türkçe: "Bizi Takip Edin"
+      * Almanca: "Folgen Sie uns"
+    - "İletişim" yazısı da çeviri fonksiyonu kullanıyor (common.contact)
+      * Türkçe: "İletişim"
+      * Almanca: "Kontakt"
+    - Yeni çeviri anahtarı eklendi:
+      * common.follow_us (Türkçe ve Almanca)
+    - resources/views/partials/main-menu.blade.php güncellendi
+    - lang/tr/common.php güncellendi
+    - lang/de/common.php güncellendi
 
-5. resources/views/admin/news/edit.blade.php
-   - Yayın Tarihi (published_at) input alanı eklendi
+ 37. Header Yazıları Bold Sorunu Düzeltildi
+    - Organization name yazısı artık tüm sayfalarda bold görünüyor
+      * font-semibold → font-bold olarak değiştirildi
+      * Ana sayfada (Tailwind CDN) ve diğer sayfalarda (Vite) tutarlı görünüm
+    - resources/views/partials/top-header.blade.php güncellendi
 
-6. resources/views/news/detail.blade.php
-   - Yayın tarihi gösterimi published_at kullanıyor (yoksa created_at)
-   - Tarih formatları Türkçe ay isimleriyle gösteriliyor (formatTr kullanılıyor)
+ 38. Ana Sayfa Haber Slider Başlık Karakter Limiti
+    - Haber slider başlıkları artık maksimum 52 karakter
+      * 52 karakterden fazla olan başlıklar "..." ile kısaltılıyor
+      * Sadece ana sayfa slider'ında uygulanıyor
+      * Haber detay sayfasında başlık normal görünüyor (değişiklik yok)
+    - resources/views/welcome.blade.php güncellendi
 
-7. lang/tr/common.php
-   - 'updated_at' => 'Güncellendi' çevirisi eklendi
+ 39. Ana Sayfa Namaz Vakitleri Pozisyonu Düzeltildi
+    - Namaz vakitleri artık her zaman altta sabit kalıyor
+      * Duyurular boş olsa bile namaz vakitleri altta kalır
+      * Duyurular dolu olsa bile namaz vakitleri altta kalır
+      * Pozisyon değişmez, sürekli altta sabit
+    - Sağ sütun (duyurular + namaz vakitleri) düzenlendi
+      * Grid: items-start (üstten hizalama - duyurular yukarıda sabit)
+      * Sol sütun (haber slider): flex flex-col (tutarlılık için)
+      * Sağ sütun: flex flex-col h-full (tam yükseklik)
+      * Duyurular: flex-shrink-0 mb-4 (sabit, üstte, altında boşluk)
+      * Namaz vakitleri: flex-shrink-0 mt-auto (sabit, altta, üstünde otomatik boşluk)
+      * Duyurular yukarıda sabit kalır, namaz vakitleri altta sabit kalır
 
-8. resources/views/welcome.blade.php
-   - Ana sayfa slider ve haber alanlarında sıralama güncellendi (en yeni tarihli önce, en eski tarihli en sonda - DESC)
+ 40. "Tüm Duyurular" Linki Her Zaman Gösteriliyor
+    - "Tüm Duyurular" linki artık her zaman gösteriliyor
+      * Önceden sadece 3'ten fazla duyuru olduğunda gösteriliyordu
+      * Şimdi her zaman gösteriliyor ve pozisyonu sabit
+      * Duyuru sayısına bakılmaksızın her zaman görünür
+    - resources/views/welcome.blade.php güncellendi
 
-9. resources/views/news/detail.blade.php
-   - Paylaşım butonları basitleştirildi: Sadece tek bir "Paylaş" butonu
-   - Tüm platform butonları (Facebook, Instagram, WhatsApp, X) kaldırıldı
-   - "Linki Kopyala" butonu kaldırıldı
-   - Native Share API kullanılıyor (kullanıcı istediği uygulamayı seçebilir)
-   - Türkçe karakter ve kesme işareti sorunu düzeltildi (JSON_UNESCAPED_UNICODE flag'i eklendi)
-   - HTML entity decode işlemi eklendi (PHP tarafında)
-   - Daha temiz ve kullanıcı dostu arayüz
+ 41. Header Sosyal Medya İkonları Sırası Değiştirildi
+    - Sosyal medya ikonları artık yatay sırada (grid yerine flex)
+      * Yeni sıra: YouTube, Twitter, Facebook, Instagram (en sağda)
+      * Instagram en sağda, yanında Facebook
+      * Sonra diğerleri (YouTube, Twitter)
+    - Grid yapısı kaldırıldı, flex yapısı kullanıldı
+    - resources/views/partials/top-header.blade.php güncellendi
 
-10. resources/views/announcements/detail.blade.php
-   - Paylaşım butonları basitleştirildi: Sadece tek bir "Paylaş" butonu
-   - Tüm platform butonları (Facebook, Instagram, WhatsApp) kaldırıldı
-   - Native Share API kullanılıyor (kullanıcı istediği uygulamayı seçebilir)
-   - Türkçe karakter ve kesme işareti sorunu düzeltildi (JSON_UNESCAPED_UNICODE flag'i eklendi)
-   - HTML entity decode işlemi eklendi (PHP tarafında)
-   - Eski paylaşım fonksiyonları temizlendi
+ 42. Paylaş Butonu Türkçe Karakter Sorunu Düzeltildi
+    - Tüm paylaş fonksiyonlarında Türkçe karakter encoding sorunu düzeltildi
+      * textarea fallback'ine charset="UTF-8" eklendi
+      * textarea'ya fontFamily style eklendi (encoding için)
+      * Tüm clipboard kopyalama fonksiyonları güncellendi
+    - Etkilenen dosyalar:
+      * resources/views/news/detail.blade.php
+      * resources/views/announcements/detail.blade.php
+      * resources/views/welcome.blade.php
+      * resources/views/announcements/all.blade.php
+      * resources/views/events/index.blade.php
+      * resources/views/member/contact.blade.php
 
-11. resources/views/welcome.blade.php
-   - Ana sayfa etkinlik kartlarındaki paylaşım butonları basitleştirildi: Sadece tek bir "Paylaş" butonu
-   - Tüm platform butonları (Facebook, Instagram, WhatsApp) kaldırıldı
-   - Native Share API kullanılıyor (kullanıcı istediği uygulamayı seçebilir)
-   - Türkçe karakter desteği eklendi (HTML entity decode)
-   - Eski paylaşım fonksiyonları (shareEventToWhatsApp, shareEventToFacebook, shareEventToInstagram) kaldırıldı
-   - Yeni shareEvent() fonksiyonu eklendi
-   - Etkinlik kartı resim modal'ı boyutu düzeltildi (max-w-4xl, max-h-[90vh] - daha uygun boyut)
-
-12. resources/views/partials/main-menu.blade.php
-   - Mobil menü hamburger ikonu tema renklerine göre güncellendi
-   - Sabit teal renkleri kaldırıldı, tema değişkenleri kullanılıyor (--theme-primary-color, --theme-hover-color, --theme-link-color)
-   - Hover ve focus durumları tema renklerine göre çalışıyor
-   - Mobil menüde dropdown menü öğelerine tıklandığında menü kapanma sorunu düzeltildi
-   - Dropdown ana menü linkine tıklandığında artık menü kapanmıyor, sadece alt menüler açılıyor/kapanıyor
-   - Alt menü linklerine tıklandığında menü normal şekilde kapanıyor
-   - Ana menü linklerine data-has-children attribute'u eklendi
-
-13. resources/views/admin/members/create.blade.php
-   - "Ek Bilgiler" bölümünün altına DSGVO veri işleme onayı checkbox'ı eklendi
-   - Gizlilik politikası linki eklendi (/sayfa/datenschutz)
-   - Zorunlu alan olarak işaretlendi (*)
-   - Güvenlik ikonu (🔒) ve açıklayıcı metin eklendi
-
-14. app/Http/Controllers/Admin/MemberController.php
-   - store() metoduna privacy_consent validation'ı eklendi (required|accepted)
-   - privacy_consent_date otomatik olarak şu anki tarih/saat ile set ediliyor
-   - Admin panelinden yeni üye eklerken DSGVO uyumluluğu sağlanıyor
-
- 15. resources/views/pdf/member-application-admin.blade.php
-    - "ÜYELİĞİNİZ YÖNETİM KURULUMUZUN KARARI İLE ONAYLANMIŞTIR" kısmının altına veri onayı metni eklendi
-    - Türkçe ve Almanca olarak veri işleme onayı bilgisi gösteriliyor
-    - Onay tarihi gösteriliyor (eğer privacy_consent ve privacy_consent_date varsa)
-    - Mavi arka planlı, kenarlıklı bir kutu içinde gösteriliyor
-
- 16. Tüm Üyelik Formlarında Metinler Sadece Almanca Yapıldı:
-    - resources/views/admin/members/create.blade.php: Tüm çift dilli etiketler (TR/DE) sadece Almanca yapıldı
-      * Adı / Vorname → Vorname
-      * Soyadı / Nachname → Nachname
-      * Cinsiyet / Geschlecht → Geschlecht
-      * Doğum Tarihi / Geburtsdatum → Geburtsdatum
-      * Doğum Yeri / Geburtsort → Geburtsort
-      * Uyruğu / Staatsangehörigkeit → Staatsangehörigkeit
-      * Mesleği / Beruf → Beruf
-      * Adres / Anschrift → Anschrift
-      * Seçiniz / Bitte wählen → Bitte wählen
-      * Erkek / Männlich → Männlich
-      * Kadın / Weiblich → Weiblich
-    - resources/views/admin/members/edit.blade.php: Cinsiyet seçenekleri sadece Almanca yapıldı
-    - resources/views/member/application.blade.php: Privacy consent metni sadece Almanca yapıldı
-    - resources/views/pdf/member-application-admin.blade.php: PDF'teki veri onayı metni sadece Almanca yapıldı
-
- 17. resources/views/admin/members/edit.blade.php
-    - "Notlar" bölümünün altına DSGVO veri işleme onayı checkbox'ı eklendi
-    - Gizlilik politikası linki eklendi (/sayfa/datenschutz)
-    - Mevcut onay durumu ve tarihi gösteriliyor
-    - Sadece Almanca metin kullanılıyor
-    - Tüm label'lar ve placeholder'lar sadece Almanca yapıldı
-
- 18. app/Http/Controllers/Admin/MemberController.php
-    - update() metoduna privacy_consent validation'ı eklendi (nullable|accepted)
-    - privacy_consent_date otomatik olarak set ediliyor (eğer daha önce onay verilmemişse)
-    - Admin panelinden üye düzenlerken DSGVO uyumluluğu sağlanıyor
-
- 19. resources/views/member/certificate-pdf.blade.php
-    - Üye panelinden erişilen başvuru formu PDF'i sadece Almanca yapıldı
-    - Tüm çift dilli metinler (TR/DE) sadece Almanca yapıldı
-    - "ÜYELİK BELGESİ / MITGLIEDSBESCHEINIGUNG" → "MITGLIEDSBESCHEINIGUNG"
-    - Türkçe açıklama metni kaldırıldı, sadece Almanca metin kaldı
-    - Tüm label'lar sadece Almanca yapıldı (Doğum Tarihi → Geburtsdatum, Üye No → Mitgliedsnummer, vb.)
-    - "Yazdır" butonu → "Drucken" olarak değiştirildi
-
- 20. resources/views/pdf/member-application-admin.blade.php
-    - Üye işlemler bölümündeki başvuru formu PDF'i sadece Almanca yapıldı
-    - Tüm çift dilli metinler (TR/DE) sadece Almanca yapıldı
-    - "Üyelik Başvuru Formu / Mitgliedschaftsantrag" → "Mitgliedschaftsantrag"
-    - Tüm section title'lar sadece Almanca yapıldı (Kişisel Bilgiler → Persönliche Daten, vb.)
-    - Tüm label'lar sadece Almanca yapıldı (Ad Soyad → Name, Doğum Tarihi → Geburtsdatum, vb.)
-    - "Belirtilmemiş" → "Nicht angegeben" olarak değiştirildi
-    - Ödeme yöntemleri sadece Almanca yapıldı (Nakit → Bar, Banka Havalesi → Banküberweisung, vb.)
-    - "ÜYELİĞİNİZ YÖNETİM KURULUMUZUN KARARI İLE ONAYLANMIŞTIR" → Sadece Almanca metin kaldı
-    - Veri işleme onayı metni sadece Almanca yapıldı (TR kısmı kaldırıldı)
-    - "Onay İmzaları / Bestätigungsunterschriften" → "Bestätigungsunterschriften"
-    - İmza alanlarındaki Türkçe metinler kaldırıldı (Sekreter → Sekretär, Tarih ve İmza → Datum und Unterschrift)
-    - Footer'daki "Adres" → "Anschrift", "E-posta" → "E-Mail" olarak değiştirildi
-    - "Yazdır" butonu → "Drucken", "Ana Sayfa" → "Startseite" olarak değiştirildi
-    - "Ihre Mitgliedschaft wurde durch Beschluss unseres Vorstands genehmigt" metninin altına onay tarihi eklendi (approved_at veya membership_date kullanılıyor)
-    - Onay tarihi font boyutu büyütüldü (9px → 10px)
-    - Bankdaten (Banka Bilgileri) bölümü sadece Lastschrift ödeme yöntemlerinde gösteriliyor (lastschrift_monthly, lastschrift_semi_annual, lastschrift_annual, direct_debit)
-    - Lastschrift dışındaki ödeme yöntemlerinde (Bar, Banküberweisung) Bankdaten bölümü hiç gösterilmiyor (boş kalıyor)
-    - Logo yanındaki dernek adı yerine settings'ten "Alt Başlık" (organization_subtitle) çekiliyor, yoksa organization_name gösteriliyor
-    - Logo dernek adının üstünde gösteriliyor (solunda değil, dikey hizalama)
-
- 21. app/Http/Controllers/MemberApplicationController.php
-    - generateUniqueMemberNumber() metodunda kritik bug düzeltildi
-    - DB::table('members') yerine Member::withTrashed() kullanılıyor
-    - Silinen üyelerin numaraları artık doğru şekilde görülüyor ve tekrar kullanılmıyor
-    - Lock sorgusu da withTrashed() kullanacak şekilde güncellendi
-    - JSON_EXTRACT yerine Laravel'in native JSON where clause'u kullanılıyor (details->member_snapshot->member_no)
-    - Bu sayede force delete edilen üyelerin numaraları doğru şekilde tespit ediliyor
-
- 23. Üye Paneli DSGVO Menüsü
-    - Yeni route eklendi: /uye-panel/dsgvo (member.dsgvo)
-    - MemberAuthController'a dsgvo() metodu eklendi
-    - Yeni sayfa oluşturuldu: resources/views/member/dsgvo.blade.php
-    - Profil sayfasından "Verilerimi İndir", "Rıza Geri Çekme", "Verilerimi Sil" bölümleri kaldırıldı
-    - Bu bölümler artık DSGVO sayfasında sırayla yer alıyor
-    - Tüm üye paneli layout dosyalarına (member-profile, member-dashboard, member-payments, member-contact) menüye "DSGVO" linki eklendi
-    - DSGVO linki "İletişim & Bağış" butonundan sonra yer alıyor
-    - Hem desktop hem mobil menülere eklendi
-    - DSGVO sayfasındaki hard-coded Türkçe metinler çeviri dosyalarına taşındı (dsgvo_title, dsgvo_subtitle)
-    - Türkçe ve Almanca çeviri dosyalarına eklendi
-    - Mobil görünümde çıkış butonu dil değişim butonlarının hemen altına taşındı
-    - Mobil menüdeki çıkış butonu kaldırıldı (artık header'da dil değişim butonlarının altında)
-    - Tüm üye paneli layout dosyalarında (member-profile, member-dashboard, member-payments, member-contact) güncellendi
-
- 24. Üye Profil Sayfası Sadeleştirme
-    - Profil sayfasından "Üye Bilgileri" kartı kaldırıldı
-    - Sadece "Bilgileri Güncelle" (Edit Profile Form) bölümü kaldı
-    - Sayfa daha sade ve odaklanmış hale getirildi
-
- 25. Üye Paneli Ana Sayfa Kaldırıldı
-    - Dashboard (Ana Sayfa) sayfası tamamen kaldırıldı
-    - /uye-panel/ route'u artık profil sayfasına yönlendiriyor
-    - Tüm menülerden "Ana Sayfa" linki kaldırıldı
-    - İlk sayfa artık profil sayfası (http://127.0.0.1:8000/uye-panel/profil)
-    - Controller'daki tüm dashboard yönlendirmeleri profil sayfasına yönlendirilecek şekilde güncellendi
-    - Tüm layout dosyalarından (member-profile, member-dashboard, member-payments, member-contact) "Ana Sayfa" menü linkleri kaldırıldı
-
- 26. İletişim-Bağış Sayfası Mobil Optimizasyonu
-    - Mobil görünüm için padding'ler optimize edildi (p-8 -> p-4 sm:p-6 lg:p-8)
-    - İkon ve başlık boyutları mobilde küçültüldü
-    - Flex yapıları mobilde dikey (flex-col) olacak şekilde güncellendi
-    - Text boyutları mobilde daha küçük (text-2xl -> text-xl sm:text-2xl)
-    - Spacing'ler mobilde azaltıldı (space-y-6 -> space-y-4 sm:space-y-6)
-    - IBAN ve BIC gibi uzun metinler için break-all eklendi
-    - Butonlar mobilde tam genişlik (w-full sm:w-auto)
-    - Grid gap'ler mobilde küçültüldü (gap-8 -> gap-4 sm:gap-6 lg:gap-8)
-
- 27. Mobil Menü Butonu Sabit Yapıldı
-    - Mobil görünümde "Menü" yazısı ve hamburger ikonu artık sabit (sticky)
-    - Header ve Navigation birlikte bir sticky container içine alındı
-    - Scroll yapıldığında header ve navigation birlikte üstte sabit kalıyor
-    - Header ve navigation'ın birlikte sticky olması sayesinde kaybolma sorunu çözüldü
-    - Tüm üye paneli layout dosyalarında (member-profile, member-dashboard, member-payments, member-contact) güncellendi
-
- 28. Etkinlikler Liste Sayfası Modal Eklendi
-    - Etkinlikler-liste sayfasında etkinlik resmine tıklayınca modal açılıyor
-    - Ana sayfadaki ile aynı modal yapısı ve büyüme oranı kullanılıyor
-    - max-h-[90vh] container ve max-h-[85vh] image boyutları
-    - ESC tuşu ve dışarı tıklama ile kapatma özelliği eklendi
-    - resources/views/events/index.blade.php dosyasına modal ve JavaScript fonksiyonları eklendi
-
- 22. app/Http/Controllers/Admin/MemberController.php
-    - generateUniqueMemberNumber() metodunda kritik bug düzeltildi
-    - Member::where() yerine Member::withTrashed() kullanılıyor
-    - Silinen üyelerin numaraları artık doğru şekilde görülüyor ve tekrar kullanılmıyor
-    - JSON_EXTRACT yerine Laravel'in native JSON where clause'u kullanılıyor (details->member_snapshot->member_no)
-    - update() metodundaki force delete kontrolü de aynı şekilde düzeltildi
-
-NOTLAR:
-=======
-- published_at alanı zaten veritabanında mevcut (migration: 2026_02_01_162922_add_published_at_to_news_table.php)
-- Eski haberler için published_at boşsa created_at kullanılıyor (geriye dönük uyumluluk)
-- Yeni haberler için published_at boş bırakılırsa otomatik olarak şu anki tarih atanıyor
-
-TEST EDİLMESİ GEREKENLER:
-==========================
-1. Yeni haber eklerken published_at alanının çalıştığını kontrol edin
-2. Geçmişe dair bir haber ekleyip sıralamanın doğru olduğunu kontrol edin
-3. Admin panelinde ve public sayfada haberlerin tarih bazlı sıralandığını kontrol edin
-4. Eski haberlerin (published_at olmayan) hala göründüğünü kontrol edin

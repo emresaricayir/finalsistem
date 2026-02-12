@@ -229,8 +229,7 @@
 </head>
 <body class="min-h-screen">
 
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Container -->
     <div class="relative min-h-screen">
@@ -720,6 +719,8 @@
         // Fallback copy function for older browsers
         function fallbackCopyTextToClipboard(text) {
             const textArea = document.createElement('textarea');
+            textArea.setAttribute('charset', 'UTF-8');
+            textArea.style.fontFamily = 'Arial, sans-serif';
             textArea.value = text;
             textArea.style.position = 'fixed';
             textArea.style.left = '-999999px';

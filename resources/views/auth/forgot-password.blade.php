@@ -1,10 +1,17 @@
+@php
+    $orgName = \App\Models\Settings::get('organization_name', 'Admin Paneli');
+    $logoUrl = \App\Models\Settings::getLogoUrl();
+    $hasLogo = \App\Models\Settings::hasLogo();
+    $backgroundImage = asset('storage/login/login-background.jpg');
+@endphp
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Şifre Sıfırlama - {{ config('app.name', 'Üyelik Sistemi') }}</title>
+    <title>Şifre Sıfırlama - {{ $orgName }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
@@ -35,32 +42,55 @@
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #134e4a 100%);
+        .gradient-overlay {
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.85) 0%, rgba(17, 94, 89, 0.85) 50%, rgba(19, 78, 74, 0.85) 100%);
+        }
+        .background-image {
+            background-image: url('{{ $backgroundImage }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .input-glow:focus {
             box-shadow: 0 0 20px rgba(20, 184, 166, 0.3);
         }
+        @media (max-width: 768px) {
+            .background-image {
+                background-size: cover;
+                background-position: center;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen gradient-bg flex items-center justify-center px-4">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/20 animate-pulse"></div>
-        <div class="absolute top-1/4 right-20 w-20 h-20 rounded-full bg-white/10 animate-pulse delay-1000"></div>
-        <div class="absolute bottom-20 left-1/3 w-24 h-24 rounded-full bg-white/15 animate-pulse delay-500"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-16 h-16 rounded-full bg-white/20 animate-pulse delay-700"></div>
+<body class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+    <!-- Background Image with Overlay -->
+    <div class="absolute inset-0 background-image">
+        <div class="absolute inset-0 gradient-overlay"></div>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="absolute inset-0 opacity-20">
+        <div class="absolute top-10 left-10 w-32 h-32 rounded-full bg-white/10 animate-pulse"></div>
+        <div class="absolute top-1/4 right-20 w-20 h-20 rounded-full bg-white/5 animate-pulse" style="animation-delay: 1s;"></div>
+        <div class="absolute bottom-20 left-1/3 w-24 h-24 rounded-full bg-white/8 animate-pulse" style="animation-delay: 0.5s;"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-16 h-16 rounded-full bg-white/10 animate-pulse" style="animation-delay: 0.7s;"></div>
     </div>
 
     <!-- Reset Password Card -->
     <div class="w-full max-w-md relative z-10">
         <!-- Header -->
         <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                <i class="fas fa-key text-white text-2xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Şifre Sıfırlama</h1>
-            <p class="text-teal-100">E-posta adresinizi girin</p>
+            @if($hasLogo)
+                <div class="w-24 h-24 mx-auto mb-3 shadow-2xl flex items-center justify-center">
+                    <img src="{{ $logoUrl }}" alt="{{ $orgName }}" class="w-full h-full object-contain">
+                </div>
+            @else
+                <div class="w-24 h-24 bg-gradient-to-r from-teal-400 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-2xl">
+                    <i class="fas fa-mosque text-white text-3xl"></i>
+                </div>
+            @endif
+            <h1 class="text-3xl font-bold text-white mb-2">{{ $orgName }}</h1>
+            <p class="text-teal-100">Şifre Sıfırlama</p>
         </div>
 
         <!-- Reset Form -->

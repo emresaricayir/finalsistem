@@ -98,6 +98,7 @@ return [
     'about_us' => 'Hakkımızda',
     'board_of_directors' => 'Yönetim Kurulu',
     'social_media' => 'Sosyal Medya',
+    'follow_us' => 'Bizi Takip Edin',
     'our_location' => 'Konumumuz',
     'detailed_map' => 'Detaylı Harita',
     'map' => 'Harita',

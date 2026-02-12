@@ -280,6 +280,8 @@ function copyToClipboard(text, button) {
     // Fallback method for older browsers
     function fallbackCopyTextToClipboard(text) {
         var textArea = document.createElement("textarea");
+        textArea.setAttribute('charset', 'UTF-8');
+        textArea.style.fontFamily = 'Arial, sans-serif';
         textArea.value = text;
         textArea.style.top = "0";
         textArea.style.left = "0";

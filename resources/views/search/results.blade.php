@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body class="min-h-screen bg-slate-50">
-@include('partials.top-header')
-@include('partials.main-menu')
+@include('partials.header-menu-wrapper')
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

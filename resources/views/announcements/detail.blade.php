@@ -226,8 +226,7 @@
 </head>
 <body class="min-h-screen">
 
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Container -->
     <div class="relative min-h-screen">
@@ -454,12 +453,12 @@
     <!-- Image Modal -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden overflow-auto" onclick="closeImageModal()">
         <div class="min-h-full flex items-center justify-center p-4" onclick="event.stopPropagation()">
-            <div class="relative max-w-7xl w-full">
-                <button onclick="closeImageModal()" class="fixed top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">
+            <div class="relative max-w-4xl w-full">
+                <button onclick="closeImageModal()" class="absolute -top-12 right-0 md:top-4 md:right-4 text-white hover:text-gray-300 text-2xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
-                <img id="modalImage" src="" alt="" class="w-full h-auto object-contain">
-                <div id="modalTitle" class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white p-4 text-center font-medium"></div>
+                <img id="modalImage" src="" alt="" class="max-w-full max-h-[85vh] md:max-h-[90vh] w-auto h-auto object-contain mx-auto rounded-lg">
+                <div id="modalTitle" class="text-white text-center mt-4 text-base md:text-lg font-medium"></div>
             </div>
         </div>
     </div>
@@ -508,6 +507,8 @@
                 }).catch(() => {
                     // Fallback
                     const textArea = document.createElement('textarea');
+                    textArea.setAttribute('charset', 'UTF-8');
+                    textArea.style.fontFamily = 'Arial, sans-serif';
                     textArea.value = url;
                     document.body.appendChild(textArea);
                     textArea.select();
@@ -518,6 +519,8 @@
             } else {
                 // Fallback
                 const textArea = document.createElement('textarea');
+                textArea.setAttribute('charset', 'UTF-8');
+                textArea.style.fontFamily = 'Arial, sans-serif';
                 textArea.value = url;
                 document.body.appendChild(textArea);
                 textArea.select();

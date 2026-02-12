@@ -40,8 +40,7 @@
     @include('partials.theme-styles')
 </head>
 <body class="bg-gray-50 font-sans">
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -351,10 +350,10 @@
     <footer class="bg-gray-900 text-gray-300 mt-16">
         <div class="max-w-4xl mx-auto px-4 py-8 text-center">
             <p class="text-sm">
-                © {{ date('Y') }} {{ $settings['organization_name'] }}. {{ __('common.all_rights_reserved') }}.
+                © {{ date('Y') }} {{ $settings['organization_name'] }}. {{ __('common.all_rights_reserved') }}. 
+                <span class="text-gray-400">v{{ config('app.version', '1.0.0') }}</span>
             </p>
         </div>
     </footer>
-
 </body>
 </html>

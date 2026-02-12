@@ -97,6 +97,7 @@ return [
     'about_us' => 'Über uns',
     'board_of_directors' => 'Vorstand',
     'social_media' => 'Soziale Medien',
+    'follow_us' => 'Folgen Sie uns',
     'our_location' => 'Unser Standort',
     'detailed_map' => 'Detaillierte Karte',
     'map' => 'Karte',

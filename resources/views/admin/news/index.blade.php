@@ -4,6 +4,19 @@
 
 @section('content')
 <div class="space-y-6">
+    <!-- Success Message -->
+    @if(session('success'))
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between alert-success">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                <span class="text-green-800 font-medium">{{ session('success') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-green-500 hover:text-green-700 ml-4">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">
@@ -94,6 +107,22 @@
         </div>
     </div>
 </div>
+
+@section('scripts')
+<script>
+    // Success mesajını 5 saniye sonra otomatik kaldır
+    @if(session('success'))
+        setTimeout(function() {
+            const alert = document.querySelector('.alert-success');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 5000);
+    @endif
+</script>
+@endsection
 @endsection
 
 

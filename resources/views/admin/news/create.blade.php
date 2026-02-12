@@ -66,20 +66,47 @@
                         </div>
                     </div>
 
-                    <!-- Cover Image -->
-                    <div>
-                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-image mr-2 text-purple-500"></i>
-                            Kapak Görseli
-                        </label>
-                        <input type="file"
-                               name="image"
-                               id="image"
-                               accept="image/*"
-                               class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('image') border-red-500 @enderror">
-                        @error('image')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                    <!-- Cover Images -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Türkçe Kapak Görseli -->
+                        <div>
+                            <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-purple-500"></i>
+                                Kapak Görseli (Türkçe)
+                            </label>
+                            <input type="file"
+                                   name="image"
+                                   id="image"
+                                   accept="image/*"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('image') border-red-500 @enderror">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Türkçe sayfalar için kapak görseli
+                            </p>
+                            @error('image')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Almanca Kapak Görseli -->
+                        <div>
+                            <label for="image_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-green-500"></i>
+                                Kapak Görseli (Almanca) <span class="text-xs text-gray-500">(İsteğe bağlı)</span>
+                            </label>
+                            <input type="file"
+                                   name="image_de"
+                                   id="image_de"
+                                   accept="image/*"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent @error('image_de') border-red-500 @enderror">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Almanca sayfalar için kapak görseli. Boş bırakılırsa Türkçe görsel kullanılır.
+                            </p>
+                            @error('image_de')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- News Photos -->

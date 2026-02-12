@@ -78,10 +78,16 @@ class NewsController extends Controller
             $validated['published_at'] = \Carbon\Carbon::parse($validated['published_at']);
         }
 
-        // Handle cover image upload
+        // Handle cover image upload (Türkçe)
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('news', 'public');
             $validated['image_path'] = 'storage/' . $path;
+        }
+
+        // Handle cover image upload (Almanca)
+        if ($request->hasFile('image_de')) {
+            $path = $request->file('image_de')->store('news', 'public');
+            $validated['image_path_de'] = 'storage/' . $path;
         }
 
         $news = News::create($validated);
@@ -100,7 +106,7 @@ class NewsController extends Controller
             }
         }
 
-        return redirect()->route('admin.news.edit', $news)
+        return redirect()->route('admin.news.index')
             ->with('success', 'Haber başarıyla oluşturuldu.');
     }
 
@@ -137,14 +143,29 @@ class NewsController extends Controller
             $validated['published_at'] = $news->published_at ?? now();
         }
 
+        // Handle cover image upload (Türkçe)
         if ($request->hasFile('image')) {
+            // Eski görseli sil
+            if ($news->getOriginal('image_path') && file_exists(public_path($news->getOriginal('image_path')))) {
+                unlink(public_path($news->getOriginal('image_path')));
+            }
             $path = $request->file('image')->store('news', 'public');
             $validated['image_path'] = 'storage/' . $path;
         }
 
+        // Handle cover image upload (Almanca)
+        if ($request->hasFile('image_de')) {
+            // Eski görseli sil
+            if ($news->image_path_de && file_exists(public_path($news->image_path_de))) {
+                unlink(public_path($news->image_path_de));
+            }
+            $path = $request->file('image_de')->store('news', 'public');
+            $validated['image_path_de'] = 'storage/' . $path;
+        }
+
         // Güncelleme öncesi durumu kontrol et
         $hasPhotos = $request->hasFile('photos');
-        
+
         $news->update($validated);
 
         // Handle additional photos upload
@@ -161,13 +182,8 @@ class NewsController extends Controller
             }
         }
 
-        // Güncelleme gerçekleştiyse admin/news sayfasına yönlendir
-        if ($news->wasChanged() || $hasPhotos) {
-            return redirect()->route('admin.news.index')
-                ->with('success', 'Haber başarıyla güncellendi.');
-        }
-
-        return redirect()->route('admin.news.edit', $news)
+        // Güncelleme sonrası haberler listesine yönlendir
+        return redirect()->route('admin.news.index')
             ->with('success', 'Haber başarıyla güncellendi.');
     }
 
@@ -183,6 +199,58 @@ class NewsController extends Controller
         $news->update(['is_active' => !$news->is_active]);
         $status = $news->is_active ? 'aktif' : 'pasif';
         return back()->with('success', "Haber {$status} duruma getirildi.");
+    }
+
+    /**
+     * Remove Turkish cover image
+     */
+    public function removeImage(News $news)
+    {
+        $imagePath = $news->getOriginal('image_path');
+        
+        if ($imagePath) {
+            // storage/news/xxx.jpg formatındaki path'i düzelt
+            $diskPath = str_replace('storage/', '', $imagePath);
+            
+            // Storage disk'inden sil
+            if (Storage::disk('public')->exists($diskPath)) {
+                Storage::disk('public')->delete($diskPath);
+            }
+        }
+        
+        $news->update(['image_path' => null]);
+        
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Türkçe kapak görseli silindi.']);
+        }
+        
+        return back()->with('success', 'Türkçe kapak görseli silindi.');
+    }
+
+    /**
+     * Remove German cover image
+     */
+    public function removeImageDe(News $news)
+    {
+        $imagePath = $news->image_path_de;
+        
+        if ($imagePath) {
+            // storage/news/xxx.jpg formatındaki path'i düzelt
+            $diskPath = str_replace('storage/', '', $imagePath);
+            
+            // Storage disk'inden sil
+            if (Storage::disk('public')->exists($diskPath)) {
+                Storage::disk('public')->delete($diskPath);
+            }
+        }
+        
+        $news->update(['image_path_de' => null]);
+        
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Almanca kapak görseli silindi.']);
+        }
+        
+        return back()->with('success', 'Almanca kapak görseli silindi.');
     }
 
     public function destroyPhoto(News $news, NewsPhoto $photo)

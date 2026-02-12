@@ -25,6 +25,23 @@
 
     <!-- Form -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <!-- Validation Errors -->
+        @if ($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-3 mt-0.5"></i>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-red-800 mb-2">Lütfen aşağıdaki hataları düzeltin:</h3>
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <form action="{{ route('admin.announcements.update', $announcement) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
@@ -98,35 +115,76 @@
                 <!-- Sidebar -->
                 <div class="space-y-6">
                     <!-- Image Upload -->
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-image mr-2 text-pink-500"></i>
-                            Kapak Görseli
-                        </label>
-                        <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
-                            <div class="aspect-video bg-gray-100 relative">
-                                @if($announcement->image_url)
-                                    <img id="imagePreview" src="{{ $announcement->image_url }}" alt="Mevcut görsel" class="absolute inset-0 w-full h-full object-cover">
-                                @else
-                                    <img id="imagePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
-                                @endif
-                                <div id="imagePlaceholder" class="{{ $announcement->image_url ? 'hidden' : '' }} absolute inset-0 flex items-center justify-center text-gray-400">
-                                    <i class="fas fa-image text-4xl"></i>
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-4">
+                        <!-- Türkçe Kapak Görseli -->
+                        <div>
+                            <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-purple-500"></i>
+                                Kapak Görseli (Türkçe)
+                            </label>
+                            <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                                <div class="aspect-video bg-gray-100 relative">
+                                    @if($announcement->getOriginal('image_path'))
+                                        <img id="imagePreview" src="{{ asset('storage/' . $announcement->getOriginal('image_path')) }}" alt="Mevcut görsel (Türkçe)" class="absolute inset-0 w-full h-full object-cover">
+                                    @else
+                                        <img id="imagePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
+                                    @endif
+                                    <div id="imagePlaceholder" class="{{ $announcement->getOriginal('image_path') ? 'hidden' : '' }} absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-4xl"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <input type="file" name="image" id="image" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event, 'imagePreview', 'imagePlaceholder')">
+                                    <p class="text-xs text-gray-500 mt-2">Türkçe sayfalar için kapak görseli. Önerilen oran 16:9. Maksimum 4MB.</p>
+                                    @if($announcement->getOriginal('image_path'))
+                                        <button type="button" onclick="removeAnnouncementImage('{{ route('admin.announcements.remove-image', $announcement) }}', 'Türkçe')" class="mt-2 inline-flex items-center px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm font-medium">
+                                            <i class="fas fa-trash mr-2"></i>Görseli Sil
+                                        </button>
+                                    @endif
                                 </div>
                             </div>
-                            <div class="p-3">
-                                <input type="file" name="image" id="image" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event)">
-                                <p class="text-xs text-gray-500 mt-2">Önerilen oran 16:9. Maksimum 4MB. JPG/PNG/WEBP.</p>
-                                @if($announcement->image_url)
-                                    <button type="button" onclick="removeAnnouncementImage('{{ route('admin.announcements.remove-image', $announcement) }}')" class="mt-2 inline-flex items-center px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm font-medium">
-                                        <i class="fas fa-trash mr-2"></i>Resmi Sil
-                                    </button>
-                                @endif
-                            </div>
+                            @error('image')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        @error('image')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+
+                        <!-- Almanca Kapak Görseli -->
+                        <div>
+                            <label for="image_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-green-500"></i>
+                                Kapak Görseli (Almanca) <span class="text-xs text-gray-500">(İsteğe bağlı)</span>
+                            </label>
+                            <div class="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                                <div class="aspect-video bg-gray-100 relative">
+                                    @if($announcement->image_path_de)
+                                        <img id="imageDePreview" src="{{ asset('storage/' . $announcement->image_path_de) }}" alt="Mevcut görsel (Almanca)" class="absolute inset-0 w-full h-full object-cover">
+                                    @else
+                                        <img id="imageDePreview" src="" alt="Önizleme" class="hidden absolute inset-0 w-full h-full object-cover">
+                                    @endif
+                                    <div id="imageDePlaceholder" class="{{ $announcement->image_path_de ? 'hidden' : '' }} absolute inset-0 flex items-center justify-center text-gray-400">
+                                        <i class="fas fa-image text-4xl"></i>
+                                        @if(!$announcement->image_path_de)
+                                            <div class="text-center text-xs text-gray-500 mt-12">
+                                                <p>Almanca görsel yok</p>
+                                                <p class="mt-1">Türkçe görsel kullanılıyor</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <input type="file" name="image_de" id="image_de" accept="image/*" class="w-full text-sm" onchange="previewAnnouncementImage(event, 'imageDePreview', 'imageDePlaceholder')">
+                                    <p class="text-xs text-gray-500 mt-2">Almanca sayfalar için kapak görseli. Boş bırakılırsa Türkçe görsel kullanılır. Önerilen oran 16:9. Maksimum 4MB.</p>
+                                    @if($announcement->image_path_de)
+                                        <button type="button" onclick="removeAnnouncementImage('{{ route('admin.announcements.remove-image-de', $announcement) }}', 'Almanca')" class="mt-2 inline-flex items-center px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-sm font-medium">
+                                            <i class="fas fa-trash mr-2"></i>Görseli Sil
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                            @error('image_de')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
 
@@ -214,14 +272,22 @@
 </div>
 
 <script>
-    function previewAnnouncementImage(e){
+    function previewAnnouncementImage(e, previewId = 'imagePreview', placeholderId = 'imagePlaceholder'){
         const file = e.target.files && e.target.files[0];
-        const img = document.getElementById('imagePreview');
-        const ph = document.getElementById('imagePlaceholder');
+        const img = document.getElementById(previewId);
+        const ph = document.getElementById(placeholderId);
         if(!file){
-            @if(!$announcement->image_url)
-                img.classList.add('hidden');
-                ph.classList.remove('hidden');
+            @if(!$announcement->getOriginal('image_path'))
+                if(previewId === 'imagePreview') {
+                    img.classList.add('hidden');
+                    ph.classList.remove('hidden');
+                }
+            @endif
+            @if(!$announcement->image_path_de)
+                if(previewId === 'imageDePreview') {
+                    img.classList.add('hidden');
+                    ph.classList.remove('hidden');
+                }
             @endif
             return;
         }
@@ -233,8 +299,8 @@
     }
 
     // Remove image via fetch DELETE
-    function removeAnnouncementImage(url) {
-        if (!confirm('Kapak görseli silinsin mi?')) return;
+    function removeAnnouncementImage(url, imageType = 'Kapak görseli') {
+        if (!confirm(imageType + ' kapak görselini silmek istediğinize emin misiniz?')) return;
         fetch(url, {
             method: 'DELETE',
             headers: {
@@ -243,6 +309,9 @@
             }
         }).then(() => {
             window.location.reload();
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Görsel silinirken bir hata oluştu.');
         });
     }
 </script>

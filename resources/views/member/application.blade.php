@@ -80,8 +80,7 @@
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -111,6 +110,18 @@
 
         <form action="{{ route('member.application.store') }}" method="POST" class="space-y-8" autocomplete="off">
             @csrf
+
+            <!-- Honeypot Field - Bot koruması (görünmez) -->
+            <div style="position: absolute !important; left: -9999px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important;" aria-hidden="true">
+                <label for="company_name" style="display: none;">Şirket Adı (boş bırakın)</label>
+                <input type="text" 
+                       name="company_name" 
+                       id="company_name" 
+                       tabindex="-1" 
+                       autocomplete="off"
+                       value=""
+                       style="position: absolute !important; left: -9999px !important;">
+            </div>
 
             <!-- Personal Information Section -->
             <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">

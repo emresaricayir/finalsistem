@@ -67,26 +67,74 @@
                         </div>
                     </div>
 
-                    <!-- Cover Image -->
-                    <div>
-                        <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-image mr-2 text-purple-500"></i>
-                            Kapak Görseli
-                        </label>
-                        @if($news->image_path)
-                            <div class="mb-3">
-                                <img src="{{ asset($news->image_path) }}" alt="Mevcut kapak görseli" class="h-32 w-auto rounded-lg shadow-sm border">
-                                <p class="text-xs text-gray-500 mt-1">Mevcut kapak görseli</p>
-                            </div>
-                        @endif
-                        <input type="file"
-                               name="image"
-                               id="image"
-                               accept="image/*"
-                               class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('image') border-red-500 @enderror">
-                        @error('image')
-                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                    <!-- Cover Images -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Türkçe Kapak Görseli -->
+                        <div>
+                            <label for="image" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-purple-500"></i>
+                                Kapak Görseli (Türkçe)
+                            </label>
+                            @if($news->getOriginal('image_path'))
+                                <div class="mb-3 relative">
+                                    <img src="{{ asset($news->getOriginal('image_path')) }}" alt="Mevcut kapak görseli (Türkçe)" class="h-32 w-auto rounded-lg shadow-sm border">
+                                    <p class="text-xs text-gray-500 mt-1">Mevcut kapak görseli (Türkçe)</p>
+                                    <button type="button" onclick="removeNewsImage('{{ route('admin.news.remove-image', $news) }}', 'Türkçe')" class="mt-2 text-xs text-red-600 hover:text-red-800 font-medium flex items-center">
+                                        <i class="fas fa-trash-alt mr-1"></i>
+                                        Görseli Sil
+                                    </button>
+                                </div>
+                            @endif
+                            <input type="file"
+                                   name="image"
+                                   id="image"
+                                   accept="image/*"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('image') border-red-500 @enderror">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Türkçe sayfalar için kapak görseli
+                            </p>
+                            @error('image')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Almanca Kapak Görseli -->
+                        <div>
+                            <label for="image_de" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-image mr-2 text-green-500"></i>
+                                Kapak Görseli (Almanca) <span class="text-xs text-gray-500">(İsteğe bağlı)</span>
+                            </label>
+                            @if($news->image_path_de)
+                                <div class="mb-3 relative">
+                                    <img src="{{ asset($news->image_path_de) }}" alt="Mevcut kapak görseli (Almanca)" class="h-32 w-auto rounded-lg shadow-sm border">
+                                    <p class="text-xs text-gray-500 mt-1">Mevcut kapak görseli (Almanca)</p>
+                                    <button type="button" onclick="removeNewsImage('{{ route('admin.news.remove-image-de', $news) }}', 'Almanca')" class="mt-2 text-xs text-red-600 hover:text-red-800 font-medium flex items-center">
+                                        <i class="fas fa-trash-alt mr-1"></i>
+                                        Görseli Sil
+                                    </button>
+                                </div>
+                            @else
+                                <div class="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Almanca görsel yok. Türkçe görsel kullanılıyor.
+                                    </p>
+                                </div>
+                            @endif
+                            <input type="file"
+                                   name="image_de"
+                                   id="image_de"
+                                   accept="image/*"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent @error('image_de') border-red-500 @enderror">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Almanca sayfalar için kapak görseli. Boş bırakılırsa Türkçe görsel kullanılır.
+                            </p>
+                            @error('image_de')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -537,5 +585,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Remove image via fetch DELETE
+function removeNewsImage(url, imageType = 'Kapak görseli') {
+    if (!confirm(imageType + ' kapak görselini silmek istediğinize emin misiniz?')) return;
+    
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Görsel silinirken bir hata oluştu.');
+            });
+        }
+    })
+    .then(data => {
+        // Başarılı - sayfayı yenile
+        window.location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(error.message || 'Görsel silinirken bir hata oluştu.');
+    });
+}
 </script>
 @endsection

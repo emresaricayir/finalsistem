@@ -51,8 +51,7 @@
         $colorClass = $colorClasses[$error['color']];
     @endphp
 
-    @include('partials.top-header')
-    @include('partials.main-menu')
+    @include('partials.header-menu-wrapper')
 
     <!-- Main Content -->
     <div class="relative min-h-screen">
