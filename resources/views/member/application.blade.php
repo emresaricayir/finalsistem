@@ -465,7 +465,7 @@
                     <input type="checkbox" name="privacy_consent" id="privacy_consent" value="1" required
                            class="w-5 h-5 theme-link-icon border-2 border-gray-300 rounded focus:ring-teal-500 focus:ring-2 mt-0.5">
                     <label for="privacy_consent" class="text-sm text-gray-800 cursor-pointer leading-relaxed">
-                        Ich habe die <a href="/sayfa/datenschutz" target="_blank" class="underline font-semibold text-teal-700 hover:text-teal-900">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu. *
+                            Ich habe die <a href="/sayfa/datenschutz" target="_blank" class="underline font-semibold text-teal-700 hover:text-teal-900">Datenschutzerklärung</a> gelesen und stimme der Verarbeitung meiner personenbezogenen Daten zu. *
                     </label>
                 </div>
             </div>

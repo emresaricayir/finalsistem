@@ -1,185 +1,19 @@
-29. Üyelik Başvuru Formu Bot Koruması Eklendi
-    - Honeypot field eklendi (görünmez alan - bot tespiti için)
-      * Form içinde CSS ile tamamen gizlenmiş "company_name" alanı
-      * Botlar bu alanı doldurursa başvuru reddediliyor
-      * Gerçek kullanıcılar bu alanı görmüyor ve etkilenmiyor
-      * resources/views/member/application.blade.php dosyasına eklendi
-    - Rate limiting eklendi (throttle middleware)
-      * 10 dakikada maksimum 3 başvuru yapılabiliyor
-      * Aynı IP'den çok fazla başvuru engelleniyor
-      * routes/web.php dosyasında throttle:3,10 middleware eklendi
-    - Controller'da honeypot kontrolü eklendi
-      * app/Http/Controllers/MemberApplicationController.php dosyasında
-      * storeApplication() metodunun başına bot kontrolü eklendi
-      * Bot tespit edilirse normal bir hata mesajı gösteriliyor (botlara ipucu verilmiyor)
+GALERİ SAYFASI İYİLEŞTİRMELERİ
+================================
 
-Değişiklik Yapılanlar
-resources/views/member/application.blade.php
-routes/web.php
-app/Http/Controllers/MemberApplicationController.php
+Tarih: 2026-02-XX
+Açıklama: Galeri kategorisi sayfasında pagination eklendi, resim adları kaldırıldı ve Fancybox ile tüm görseller arasında geçiş özelliği eklendi.
 
- 30. Ana Sayfa Haber Slider Mobil İyileştirmesi
-    - Mobilde resim kesilme sorunu çözüldü
-      * Mobilde object-cover + object-center kullanılıyor (resim tam ekranı kaplıyor)
-      * Siyah arka plan eklendi (yatay boşluklar kapatıldı)
-      * Responsive yükseklik: h-64 (mobil) → h-80 (tablet) → h-[400px] (desktop)
-    - Mobilde daha uygun padding ve font boyutları
-      * Başlık padding: p-4 (mobil) → p-8 (desktop)
-      * Başlık font: text-base (mobil) → text-xl (desktop)
-      * Slider kontrolleri: w-8 h-8 (mobil) → w-10 h-10 (desktop)
-    - Touch/Swipe desteği eklendi (mobil parmakla kaydırma)
-      * Sağa-sola kaydırma ile haberler arasında geçiş
-      * Minimum 50px swipe mesafesi kontrolü
-      * Sürükleme sırasında otomatik geçiş duraklatılıyor
-      * Smooth animasyon ve snap-back özelliği
-    - resources/views/welcome.blade.php dosyası güncellendi
+DEĞİŞTİRİLEN DOSYALAR:
+---------------------- 
 
- 31. Header ve Menü Sticky Yapıldı (Scroll ile Aktifleşiyor)
-    - Header (top-header) başlangıçta normal, scroll yapınca sticky oluyor
-      * JavaScript ile scroll kontrolü eklendi
-      * 10px scroll sonrası sticky top-0 z-50 aktif oluyor
-      * Shadow eklendi (scroll sırasında görsel ayrım için)
-      * min-h-[88px] ile sabit yükseklik (scroll sırasında daralma önlendi)
-      * Smooth transition eklendi
-    - Menü (main-menu) başlangıçta normal, scroll yapınca sticky oluyor
-      * Header'ın dinamik yüksekliğine göre konumlandırılıyor
-      * Desktop: min-h-[64px] ile sabit yükseklik
-      * Mobile: min-h-[60px] ile sabit yükseklik
-      * Scroll sırasında dikey daralma ve yukarı kayma önlendi
-    - Hamburger menü ve dil butonları da sabit kalıyor
-    - Başlangıç pozisyonu korunuyor, scroll yapınca sticky aktif oluyor
-    - resources/views/partials/top-header.blade.php güncellendi
-    - resources/views/partials/main-menu.blade.php güncellendi
-    - resources/views/welcome.blade.php güncellendi (JavaScript eklendi)
+1. app/Http/Controllers/GalleryController.php
 
- 32. Duyuru Detay Sayfası Görsel Modal Boyutu Düzeltildi
-    - Görsel modalı artık düzgün boyutta açılıyor
-      * Container: max-w-7xl → max-w-4xl (daha küçük ve uygun)
-      * Image: max-h-[85vh] (mobil) ve max-h-[90vh] (desktop) eklendi
-      * Image: max-w-full ile genişlik sınırlandı
-      * Image: mx-auto rounded-lg ile merkezleme ve yuvarlatma
-    - Responsive iyileştirmeler
-      * Kapat butonu: Mobilde üstte (-top-12), desktop'ta sağ üstte
-      * Başlık: text-base (mobil) → text-lg (desktop)
-      * Başlık pozisyonu: absolute bottom → relative mt-4 (daha iyi görünüm)
-    - resources/views/announcements/detail.blade.php güncellendi
+2. resources/views/gallery/category.blade.php
+   
+3. resources\views\partials\cookie-consent.blade.php
 
- 33. Sticky Header ve Menü Tüm Sayfalara Uygulandı
-    - Sticky özelliği artık tüm sayfalarda çalışıyor
-      * Yeni partial oluşturuldu: resources/views/partials/sticky-header-menu.blade.php
-      * JavaScript kodu tüm sayfalara eklendi
-      * Ana sayfadaki duplicate kod kaldırıldı
-    - Etkilenen sayfalar:
-      * welcome.blade.php (ana sayfa)
-      * announcements/detail.blade.php
-      * announcements/all.blade.php
-      * news/detail.blade.php
-      * news/all.blade.php
-      * events/index.blade.php
-      * contact/index.blade.php
-      * gallery/index.blade.php
-      * gallery/category.blade.php
-      * video-gallery/index.blade.php
-      * video-gallery/category.blade.php
-      * page/show.blade.php
-      * search/results.blade.php
-      * board-members/index.blade.php
-      * public/personnel-category.blade.php
-      * member/auth/login.blade.php
-      * member/application.blade.php
-      * member/application-success.blade.php
-      * member/auth/forgot-password.blade.php
-      * member/auth/reset-password.blade.php
-      * errors/generic.blade.php
-    - Yeni sayfalar eklendiğinde otomatik olarak çalışacak (partial include edildiği sürece)
+4. Welcome.blade
 
- 34. Header ve Menü Sürekli Sabit Yapıldı (Wrapper ile Birlikte)
-    - Header ve menü artık birlikte sabit kalıyor (wrapper container)
-      * Yeni wrapper partial oluşturuldu: header-menu-wrapper.blade.php
-      * Wrapper: sticky top-0 z-50 (header ve menü birlikte sabit)
-      * Header: sticky kaldırıldı (wrapper içinde)
-      * Menü: sticky top-[88px] kaldırıldı (wrapper içinde)
-      * Shadow header'da kaldı (görsel ayrım için)
-    - Tüm sayfalarda otomatik çalışıyor
-      * Tüm sayfalarda top-header ve main-menu include'ları wrapper ile değiştirildi
-      * Tek bir include ile hem header hem menü ekleniyor
-      * Yeni sayfalar eklendiğinde otomatik çalışacak
-    - resources/views/partials/header-menu-wrapper.blade.php oluşturuldu
-    - resources/views/partials/top-header.blade.php güncellendi
-    - resources/views/partials/main-menu.blade.php güncellendi
-    - Tüm sayfalarda include'lar güncellendi (21 sayfa)
-
- 35. Header Yazıları Responsive Yapıldı (Tüm Sayfalarda Aynı Stil)
-    - Header'daki organization name ve subtitle yazıları artık tüm sayfalarda aynı stil
-      * Subtitle (DITIB Türkisch...): text-[10px] md:text-xs (mobilde daha küçük, desktop'ta normal)
-      * Organization Name (DİTİB Peine...): text-sm md:text-lg (mobilde küçük, desktop'ta büyük)
-      * Tüm sayfalarda tutarlı görünüm sağlandı
-    - resources/views/partials/top-header.blade.php güncellendi
-
- 36. Mobil Menü Çevirileri Düzeltildi
-    - "Bizi Takip Edin" yazısı artık çeviri fonksiyonu kullanıyor
-      * Türkçe: "Bizi Takip Edin"
-      * Almanca: "Folgen Sie uns"
-    - "İletişim" yazısı da çeviri fonksiyonu kullanıyor (common.contact)
-      * Türkçe: "İletişim"
-      * Almanca: "Kontakt"
-    - Yeni çeviri anahtarı eklendi:
-      * common.follow_us (Türkçe ve Almanca)
-    - resources/views/partials/main-menu.blade.php güncellendi
-    - lang/tr/common.php güncellendi
-    - lang/de/common.php güncellendi
-
- 37. Header Yazıları Bold Sorunu Düzeltildi
-    - Organization name yazısı artık tüm sayfalarda bold görünüyor
-      * font-semibold → font-bold olarak değiştirildi
-      * Ana sayfada (Tailwind CDN) ve diğer sayfalarda (Vite) tutarlı görünüm
-    - resources/views/partials/top-header.blade.php güncellendi
-
- 38. Ana Sayfa Haber Slider Başlık Karakter Limiti
-    - Haber slider başlıkları artık maksimum 52 karakter
-      * 52 karakterden fazla olan başlıklar "..." ile kısaltılıyor
-      * Sadece ana sayfa slider'ında uygulanıyor
-      * Haber detay sayfasında başlık normal görünüyor (değişiklik yok)
-    - resources/views/welcome.blade.php güncellendi
-
- 39. Ana Sayfa Namaz Vakitleri Pozisyonu Düzeltildi
-    - Namaz vakitleri artık her zaman altta sabit kalıyor
-      * Duyurular boş olsa bile namaz vakitleri altta kalır
-      * Duyurular dolu olsa bile namaz vakitleri altta kalır
-      * Pozisyon değişmez, sürekli altta sabit
-    - Sağ sütun (duyurular + namaz vakitleri) düzenlendi
-      * Grid: items-start (üstten hizalama - duyurular yukarıda sabit)
-      * Sol sütun (haber slider): flex flex-col (tutarlılık için)
-      * Sağ sütun: flex flex-col h-full (tam yükseklik)
-      * Duyurular: flex-shrink-0 mb-4 (sabit, üstte, altında boşluk)
-      * Namaz vakitleri: flex-shrink-0 mt-auto (sabit, altta, üstünde otomatik boşluk)
-      * Duyurular yukarıda sabit kalır, namaz vakitleri altta sabit kalır
-
- 40. "Tüm Duyurular" Linki Her Zaman Gösteriliyor
-    - "Tüm Duyurular" linki artık her zaman gösteriliyor
-      * Önceden sadece 3'ten fazla duyuru olduğunda gösteriliyordu
-      * Şimdi her zaman gösteriliyor ve pozisyonu sabit
-      * Duyuru sayısına bakılmaksızın her zaman görünür
-    - resources/views/welcome.blade.php güncellendi
-
- 41. Header Sosyal Medya İkonları Sırası Değiştirildi
-    - Sosyal medya ikonları artık yatay sırada (grid yerine flex)
-      * Yeni sıra: YouTube, Twitter, Facebook, Instagram (en sağda)
-      * Instagram en sağda, yanında Facebook
-      * Sonra diğerleri (YouTube, Twitter)
-    - Grid yapısı kaldırıldı, flex yapısı kullanıldı
-    - resources/views/partials/top-header.blade.php güncellendi
-
- 42. Paylaş Butonu Türkçe Karakter Sorunu Düzeltildi
-    - Tüm paylaş fonksiyonlarında Türkçe karakter encoding sorunu düzeltildi
-      * textarea fallback'ine charset="UTF-8" eklendi
-      * textarea'ya fontFamily style eklendi (encoding için)
-      * Tüm clipboard kopyalama fonksiyonları güncellendi
-    - Etkilenen dosyalar:
-      * resources/views/news/detail.blade.php
-      * resources/views/announcements/detail.blade.php
-      * resources/views/welcome.blade.php
-      * resources/views/announcements/all.blade.php
-      * resources/views/events/index.blade.php
-      * resources/views/member/contact.blade.php
+Melle, Dissen, Hütte, Herford - Tamam
 

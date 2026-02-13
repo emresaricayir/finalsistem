@@ -73,6 +73,10 @@
         .gallery-image:hover {
             transform: scale(1.05);
         }
+
+        .pagination-btn {
+            transition: all 0.2s ease;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -158,15 +162,35 @@
                             <div class="elegant-divider"></div>
                         </div>
 
+                        @php
+                            // Tüm görselleri Fancybox için hazırla
+                            $fancyboxImages = $allImages->map(function($image) {
+                                return [
+                                    'src' => asset('storage/' . $image->image_path),
+                                    'caption' => ($image->title ?: '') . ($image->description ? ' - ' . $image->description : ''),
+                                    'id' => $image->id
+                                ];
+                            })->values();
+                        @endphp
+
                         <!-- Gallery Images -->
                         @if($images->count() > 0)
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 @foreach($images as $index => $image)
+                                    @php
+                                        // Tüm görseller içinde bu görselin index'ini bul
+                                        $galleryIndex = $allImages->search(function($img) use ($image) {
+                                            return $img->id === $image->id;
+                                        });
+                                        $galleryIndex = $galleryIndex !== false ? $galleryIndex : 0;
+                                    @endphp
                                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                                         <div class="relative aspect-w-4 aspect-h-3">
                                             <a href="{{ asset('storage/' . $image->image_path) }}"
                                                data-fancybox="gallery"
-                                               data-caption="{{ $image->title }}{{ $image->description ? ' - ' . $image->description : '' }}">
+                                               data-src="{{ asset('storage/' . $image->image_path) }}"
+                                               data-caption="{{ $image->title }}{{ $image->description ? ' - ' . $image->description : '' }}"
+                                               data-gallery-index="{{ $galleryIndex }}">
                                                 <img src="{{ asset('storage/' . $image->image_path) }}"
                                                      alt="{{ $image->alt_text ?: $image->title }}"
                                                      class="w-full h-48 object-cover gallery-image">
@@ -175,20 +199,38 @@
                                                 </div>
                                             </a>
                                         </div>
-
-                                        @if($image->title || $image->description)
-                                            <div class="p-4">
-                                                @if($image->title)
-                                                    <h3 class="text-sm font-semibold text-gray-900 mb-1">{{ $image->title }}</h3>
-                                                @endif
-                                                @if($image->description)
-                                                    <p class="text-xs text-gray-600 line-clamp-2">{{ $image->description }}</p>
-                                                @endif
-                                            </div>
-                                        @endif
                                     </div>
                                 @endforeach
                             </div>
+                            
+                            <!-- Pagination -->
+                            @if($images->hasPages())
+                                <div class="mt-8 flex justify-center">
+                                    <div class="flex items-center space-x-2">
+                                        @if($images->currentPage() > 1)
+                                            <a href="{{ $images->previousPageUrl() }}" class="pagination-btn w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors">
+                                                <i class="fas fa-chevron-left text-sm"></i>
+                                            </a>
+                                        @endif
+
+                                        @for($i = 1; $i <= $images->lastPage(); $i++)
+                                            @if($i <= 3 || $i > $images->lastPage() - 3 || abs($i - $images->currentPage()) <= 1)
+                                                <a href="{{ $images->url($i) }}" class="pagination-btn w-10 h-10 rounded-lg {{ $images->currentPage() == $i ? 'bg-teal-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-600' }} flex items-center justify-center font-medium transition-colors">
+                                                    {{ $i }}
+                                                </a>
+                                            @elseif($i == 4 || $i == $images->lastPage() - 3)
+                                                <span class="text-gray-400 px-2">...</span>
+                                            @endif
+                                        @endfor
+
+                                        @if($images->currentPage() < $images->lastPage())
+                                            <a href="{{ $images->nextPageUrl() }}" class="pagination-btn w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition-colors">
+                                                <i class="fas fa-chevron-right text-sm"></i>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                         @else
                             <!-- Empty State -->
                             <div class="text-center py-16">
@@ -214,8 +256,34 @@
     <!-- Fancybox Script -->
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
-        Fancybox.bind("[data-fancybox]", {
-            // Fancybox options
+        // Tüm görselleri JavaScript'e aktar
+        const allGalleryImages = @json($fancyboxImages);
+
+        // Fancybox'ı tüm görsellerle başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            const galleryLinks = document.querySelectorAll('[data-fancybox="gallery"]');
+            
+            galleryLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Tıklanan görselin index'ini bul
+                    const clickedIndex = parseInt(link.getAttribute('data-gallery-index')) || 0;
+                    
+                    // Fancybox'ı tüm görsellerle başlat
+                    Fancybox.show(
+                        allGalleryImages.map(function(img) {
+                            return {
+                                src: img.src,
+                                caption: img.caption || ''
+                            };
+                        }),
+                        {
+                            startIndex: clickedIndex
+                        }
+                    );
+                });
+            });
         });
     </script>
 </body>

@@ -27,9 +27,11 @@ class GalleryController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
             
-        $images = $category->activeImages()->paginate(12);
+        $images = $category->activeImages()->paginate(16);
+        // Tüm görselleri Fancybox için al (pagination olmadan)
+        $allImages = $category->activeImages()->get();
         
-        return view('gallery.category', compact('category', 'images', 'orgName'));
+        return view('gallery.category', compact('category', 'images', 'allImages', 'orgName'));
     }
     
     public function image($categorySlug, $imageId)

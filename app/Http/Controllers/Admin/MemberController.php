@@ -278,15 +278,15 @@ class MemberController extends Controller
         // En yüksek mevcut üye numarasını bul (silinen dahil - tekrar kullanılmasın)
         $lastMember = Member::withTrashed()
             ->where('member_no', 'LIKE', 'Mitglied%')
-            ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
-            ->first();
+                ->orderByRaw('CAST(SUBSTRING(member_no, 9) AS UNSIGNED) DESC')
+                ->first();
 
         // Başlangıç numarasını belirle
-        if ($lastMember) {
-            // Son numaradan bir sonrakini al
-            $lastNumber = (int) substr($lastMember->member_no, 8); // "Mitglied" kısmını çıkar
+            if ($lastMember) {
+                // Son numaradan bir sonrakini al
+                $lastNumber = (int) substr($lastMember->member_no, 8); // "Mitglied" kısmını çıkar
             $nextNumber = $lastNumber + 1;
-        } else {
+            } else {
             $nextNumber = 1;
         }
 
@@ -302,7 +302,7 @@ class MemberController extends Controller
 
             // Bu numaranın kullanılıp kullanılmadığını kontrol et (soft delete dahil)
             $exists = Member::withTrashed()->where('member_no', $memberNo)->exists();
-            
+
             // Force delete edilen üyelerin numaralarını da kontrol et (AccessLog snapshot'larından)
             $forceDeleted = false;
             if (!$exists) {
