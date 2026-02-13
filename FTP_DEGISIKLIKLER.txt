@@ -15,5 +15,5 @@ DEĞİŞTİRİLEN DOSYALAR:
 
 4. Welcome.blade
 
-Melle, Dissen, Hütte, Herford - Tamam
+Hepsi Tamam
 
