@@ -277,8 +277,8 @@
                                 <div class="mt-8 sm:mt-10">
                                     <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Foto Galeri</h2>
                                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
-                                        @foreach($news->photos as $photo)
-                                            <button type="button" class="group relative overflow-hidden rounded-lg border focus:outline-none" data-full="{{ asset($photo->image_path) }}" onclick="openLightbox(this)">
+                                        @foreach($news->photos as $index => $photo)
+                                            <button type="button" class="group relative overflow-hidden rounded-lg border focus:outline-none" data-full="{{ asset($photo->image_path) }}" data-index="{{ $index }}" onclick="openLightbox(this, {{ $index }})">
                                                 <img src="{{ asset($photo->image_path) }}" alt="{{ $photo->caption }}" class="w-full h-32 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-300">
                                                 @if($photo->caption)
                                                     <div class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-xs px-2 py-1">{{ $photo->caption }}</div>
@@ -311,9 +311,49 @@
 
     <!-- Lightbox Modal -->
     <div id="lightbox" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
-      <button type="button" class="absolute top-4 right-4 text-white text-2xl" onclick="closeLightbox()">&times;</button>
-      <img id="lightbox-img" src="" alt="" class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl" />
+        <!-- Close Button -->
+        <button type="button" class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center" onclick="closeLightbox()" title="Kapat (ESC)">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <!-- Previous Button -->
+        <button type="button" id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-2xl hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center hidden" onclick="changeImage(-1)" title="Önceki (←)">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <!-- Next Button -->
+        <button type="button" id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-2xl hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full w-12 h-12 flex items-center justify-center hidden" onclick="changeImage(1)" title="Sonraki (→)">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        
+        <!-- Image Container -->
+        <div class="relative max-h-[90vh] max-w-[90vw] flex items-center justify-center">
+            <img id="lightbox-img" src="" alt="" class="max-h-[90vh] max-w-[90vw] rounded-lg shadow-2xl select-none" />
+        </div>
+        
+        <!-- Image Counter -->
+        <div id="lightbox-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-full text-sm hidden">
+            <span id="current-index">1</span> / <span id="total-count">1</span>
+        </div>
+        
+        <!-- Image Caption -->
+        <div id="lightbox-caption" class="absolute bottom-16 left-1/2 -translate-x-1/2 text-white bg-black/50 px-4 py-2 rounded-lg text-sm max-w-md text-center hidden"></div>
     </div>
+    
+    <!-- Store gallery images data -->
+    <script>
+        window.galleryImages = [
+            @if($news->photos && $news->photos->count())
+                @foreach($news->photos as $photo)
+                    {
+                        src: '{{ asset($photo->image_path) }}',
+                        caption: {!! json_encode($photo->caption ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) !!}
+                    }{{ !$loop->last ? ',' : '' }}
+                @endforeach
+            @endif
+        ];
+        window.currentImageIndex = 0;
+    </script>
 
     <script>
         // Wait for DOM to be ready
@@ -397,15 +437,87 @@
             }
 
             // Lightbox functions - make them globally available
-            window.openLightbox = function(el){
-                const src = el.getAttribute('data-full');
+            window.openLightbox = function(el, index){
+                if (!window.galleryImages || window.galleryImages.length === 0) return;
+                
+                window.currentImageIndex = index || 0;
                 const lb = document.getElementById('lightbox');
                 const img = document.getElementById('lightbox-img');
+                const prevBtn = document.getElementById('lightbox-prev');
+                const nextBtn = document.getElementById('lightbox-next');
+                const counter = document.getElementById('lightbox-counter');
+                const caption = document.getElementById('lightbox-caption');
+                
                 if (lb && img) {
-                    img.src = src;
+                    updateLightboxImage();
                     lb.classList.remove('hidden');
                     lb.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                    
+                    // Show/hide navigation buttons
+                    if (window.galleryImages.length > 1) {
+                        prevBtn.classList.remove('hidden');
+                        nextBtn.classList.remove('hidden');
+                        counter.classList.remove('hidden');
+                        updateCounter();
+                    } else {
+                        prevBtn.classList.add('hidden');
+                        nextBtn.classList.add('hidden');
+                        counter.classList.add('hidden');
+                    }
                 }
+            };
+            
+            function updateLightboxImage() {
+                if (!window.galleryImages || window.galleryImages.length === 0) return;
+                
+                const img = document.getElementById('lightbox-img');
+                const caption = document.getElementById('lightbox-caption');
+                
+                if (img) {
+                    const currentImage = window.galleryImages[window.currentImageIndex];
+                    img.src = currentImage.src;
+                    img.alt = currentImage.caption || '';
+                    
+                    // Update caption
+                    if (caption) {
+                        if (currentImage.caption) {
+                            caption.textContent = currentImage.caption;
+                            caption.classList.remove('hidden');
+                        } else {
+                            caption.classList.add('hidden');
+                        }
+                    }
+                    
+                    updateCounter();
+                }
+            }
+            
+            function updateCounter() {
+                const currentIndexEl = document.getElementById('current-index');
+                const totalCountEl = document.getElementById('total-count');
+                
+                if (currentIndexEl) {
+                    currentIndexEl.textContent = window.currentImageIndex + 1;
+                }
+                if (totalCountEl) {
+                    totalCountEl.textContent = window.galleryImages.length;
+                }
+            }
+            
+            window.changeImage = function(direction) {
+                if (!window.galleryImages || window.galleryImages.length === 0) return;
+                
+                window.currentImageIndex += direction;
+                
+                // Loop around
+                if (window.currentImageIndex < 0) {
+                    window.currentImageIndex = window.galleryImages.length - 1;
+                } else if (window.currentImageIndex >= window.galleryImages.length) {
+                    window.currentImageIndex = 0;
+                }
+                
+                updateLightboxImage();
             };
             
             window.closeLightbox = function(){
@@ -413,6 +525,7 @@
                 if (lb) {
                     lb.classList.add('hidden');
                     lb.classList.remove('flex');
+                    document.body.style.overflow = 'auto'; // Restore scrolling
                 }
             };
             
@@ -420,17 +533,58 @@
             const lightbox = document.getElementById('lightbox');
             if (lightbox) {
                 lightbox.addEventListener('click', function(e){ 
-                    if(e.target === this){ 
+                    // Close if clicking on background (not on image or buttons)
+                    if(e.target === this || (e.target.id === 'lightbox-img' && e.target === e.currentTarget.querySelector('#lightbox-img'))){ 
                         closeLightbox(); 
                     } 
                 });
             }
             
+            // Keyboard navigation
             document.addEventListener('keydown', function(e){ 
+                const lb = document.getElementById('lightbox');
+                if (!lb || lb.classList.contains('hidden')) return;
+                
                 if(e.key === 'Escape'){ 
                     closeLightbox(); 
-                } 
+                } else if(e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    changeImage(-1);
+                } else if(e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    changeImage(1);
+                }
             });
+            
+            // Touch/Swipe support for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            if (lightbox) {
+                lightbox.addEventListener('touchstart', function(e) {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+                
+                lightbox.addEventListener('touchend', function(e) {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, { passive: true });
+            }
+            
+            function handleSwipe() {
+                const swipeThreshold = 50; // Minimum swipe distance
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe left - next image
+                        changeImage(1);
+                    } else {
+                        // Swipe right - previous image
+                        changeImage(-1);
+                    }
+                }
+            }
 
             // Make shareNews globally available for onclick handlers
             window.shareNews = shareNews;
